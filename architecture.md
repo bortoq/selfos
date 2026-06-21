@@ -2,35 +2,50 @@
 
 ## Overview
 
-Self OS is a modular personal operating environment with local-first data, lightweight check-ins, sprint management, reflection, analytics, AI guidance, and an optional public profile.
+Self OS Phase 0 is built entirely on GitHub.  
+The repository acts as both storage and execution environment.
 
-## Components
+## Main Components
 
-- Local Data Store: JSON files containing metrics, check-ins, sprints, journal entries, tasks, notes, and configuration.
-- Check-in Module: morning and evening prompts through CLI or web.
-- Sprint Module: creates, tracks, and closes short planning cycles with goals and retrospectives.
-- Journal Module: private free-form text or voice-derived notes for context and reflection.
-- Analytics Module: aggregates metrics and highlights trends or correlations.
-- Integration Module: imports signals from tools such as GitHub, calendars, RescueTime-like activity sources, and sleep trackers.
-- AI Advisor: asks adaptive questions, structures raw notes, suggests interpretations, and drafts retrospectives.
-- Public Profile Generator: converts selected local data into a static profile site.
-- Web Dashboard: dashboard, graphs, sprint views, and reports.
-- CLI Surface: fast commands for capture and review.
+### Activity Log
+- Stored as JSON files in `data/activity/`
+- Populated by GitHub Actions
 
-## Data Flow
+### Delegation Engine
+- Implemented through GitHub Actions
+- Creates **Issues** with suggestions
+- Tracks trust level per action type
+- Can switch to automatic commits when trust threshold is reached
 
-1. The user completes a morning or evening check-in.
-2. The system stores responses in local JSON files.
-3. External integrations optionally import passive data.
-4. Analytics aggregate recent metrics, streaks, and sprint progress.
-5. The AI advisor uses current and historical data to ask better questions and draft useful summaries.
-6. Sprint reviews update goals and next actions.
-7. Selected data can be exported into a public profile.
+### Diagnostics Dashboard
+- The `README.md` serves as the main dashboard
+- Shows daily statistics, category distribution, and a simple Life Management Score
+- Always visible and up-to-date
 
-## Key Design Rule
+### Data Sources
+- GitHub Activity (native)
+- Calendar
+- Notes/tasks export (up to 3 sources total)
 
-The system should feel like a low-friction operating loop, not like a form-heavy tracker. Reflection and planning must stay short, structured, and repeatable.
+### Delegation Flow
+1. New event appears in Activity Log
+2. Action analyzes it and creates an Issue with a suggestion
+3. User accepts, edits, or rejects via GitHub
+4. Trust counter increases
+5. After enough acceptances → auto mode becomes available
 
-## Privacy Rule
+## Repository Structure
 
-Private by default. Public sharing is explicit. The user owns the source data and should be able to keep the full system local.
+```
+selfos-data/
+├── data/activity/         # JSON logs
+├── .github/workflows/     # Delegation logic
+├── README.md              # Diagnostics + public profile
+└── selfos.yaml            # Configuration
+```
+
+## Key Advantages of This Approach
+- No separate server or database needed
+- Natural delegation mechanism using Issues and PRs
+- Full data ownership
+- Fast to develop and deploy

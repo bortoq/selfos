@@ -1,0 +1,36 @@
+name: Import Activity Logs
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # Every day at 06:00 UTC
+  workflow_dispatch:      # Manual trigger
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run GitHub import script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python scripts/import_github.py
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/activity/
+          git diff --cached --quiet || git commit -m "chore: update activity log"
+          git push

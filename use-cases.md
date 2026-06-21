@@ -1,25 +1,16 @@
 # Use Cases
 
-## Two-Week Personal Sprint
+## Event categorization
+A new event appears in the Activity Log. The system creates an Issue suggesting a category. The user accepts or changes it. After 10+ acceptances, the action can be switched to auto.
 
-A user starts a sprint with one main goal and a few measurable outcomes. During the sprint they log short check-ins and review progress. At the end, the system generates a retrospective draft.
+## Viewing diagnostics
+The user opens their repository. The README shows how many tasks were completed, postponed, or cancelled today, plus category distribution.
 
-## Developer Progress Profile
+## Enabling auto mode
+After consistently accepting category suggestions, the user allows the system to categorize new events automatically via commits.
 
-A developer links GitHub activity, tracks focus and workload, and publishes an optional profile that shows current sprint, recent wins, and long-term progress trends.
+## Adding new data sources
+The user connects a calendar or notes export. GitHub Actions start importing data into the Activity Log.
 
-## Language Learning
-
-A learner tracks study minutes, completed lessons, and recall quality. The system compares current performance against their own recent baseline and proposes small process changes.
-
-## Burnout Prevention
-
-A user tracks energy, sleep, overload, and output. The AI advisor highlights correlations and warns when overload repeatedly predicts lower-quality days.
-
-## Private Reflective Journal
-
-A user writes or dictates short reflections. The journal remains private, but key insights can feed future sprint planning and AI-assisted reviews.
-
-## Coach Or Mentor Workflow
-
-A coach or mentor reviews a client’s exported or shared profile, focusing on progress trends, consistency, and sprint outcomes instead of social content.
+## Reviewing suggestions
+The system proposes a category for a task. The user corrects it once. The trust counter resets for that specific case.

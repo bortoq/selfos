@@ -1,0 +1,30 @@
+version: 0.1
+name: Self OS Data
+description: Personal activity log and delegation system
+
+modules:
+  - activity_log
+  - delegation_engine
+  - diagnostics
+
+settings:
+  auto_import: true
+  default_trust_threshold: 10
+
+delegation_defaults:
+  log_import: "auto"
+
+trust_thresholds:
+  event_categorization: 10
+  daily_summary: 5
+  tag_suggestion: 8
+
+force_review:
+  event_categorization: false
+  daily_summary: false
+  tag_suggestion: false
+
+sources:
+  - github
+  - calendar
+  - notes

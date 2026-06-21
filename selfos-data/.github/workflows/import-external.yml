@@ -1,0 +1,55 @@
+name: Import External Data
+
+on:
+  schedule:
+    - cron: '0 7 * * *'   # Every day at 07:00 UTC
+  workflow_dispatch:
+
+jobs:
+  import_data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Run Calendar Plugin
+        env:
+          CALENDAR_ID: ${{ secrets.CALENDAR_ID }}
+        run: python -c "
+from plugins.calendar_plugin import CalendarPlugin
+plugin = CalendarPlugin({'calendar_id': '${{ secrets.CALENDAR_ID || \"primary\" }}'})
+events = plugin.fetch()
+print(f'Calendar events fetched: {len(events)}')
+for e in events:
+    print(e)
+"
+
+      - name: Run Todoist Plugin
+        env:
+          TODOIST_TOKEN: ${{ secrets.TODOIST_TOKEN }}
+        run: python -c "
+from plugins.todoist_plugin import TodoistPlugin
+plugin = TodoistPlugin()
+tasks = plugin.fetch()
+print(f'Todoist tasks fetched: {len(tasks)}')
+for t in tasks:
+    print(t)
+"
+
+      - name: Commit new data (placeholder)
+        run: |
+          echo "External data import completed" > external_import.log
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add external_import.log
+          git diff --cached --quiet || git commit -m "chore: external data import run"
+          git push

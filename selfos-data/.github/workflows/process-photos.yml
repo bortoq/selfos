@@ -1,0 +1,31 @@
+name: Process Photos
+
+on:
+  push:
+    paths:
+      - 'media/**'
+  workflow_dispatch:
+
+jobs:
+  classify_photos:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run photo classifier
+        run: python scripts/photo_classifier.py
+
+      - name: Commit new photo events
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/activity/
+          git diff --cached --quiet || git commit -m "chore: process new photos"
+          git push
