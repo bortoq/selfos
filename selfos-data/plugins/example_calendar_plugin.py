@@ -5,7 +5,8 @@ This is a template plugin for importing calendar events.
 In a real implementation it would connect to Google Calendar, Outlook, etc.
 """
 
-from typing import List, Dict, Any
+from typing import Any
+
 from .base_plugin import BasePlugin
 
 
@@ -19,11 +20,11 @@ class CalendarPlugin(BasePlugin):
     name = "calendar"
     description = "Imports events from calendar services"
 
-    def __init__(self, config: Dict[str, Any] = None):
+    def __init__(self, config: dict[str, Any] | None = None):
         super().__init__(config)
         self.calendar_id = self.config.get("calendar_id", "primary")
 
-    def fetch(self) -> List[Dict[str, Any]]:
+    def fetch(self) -> list[dict[str, Any]]:
         """
         Fetch calendar events.
         Currently returns mock data for demonstration.

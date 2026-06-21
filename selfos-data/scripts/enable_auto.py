@@ -5,15 +5,16 @@ Can be triggered manually or via GitHub Issue.
 """
 
 import sys
-import yaml
 from pathlib import Path
+
+import yaml
 
 CONFIG_FILE = Path("selfos.yaml")
 
 
 def load_config():
     if CONFIG_FILE.exists():
-        with open(CONFIG_FILE, 'r') as f:
+        with open(CONFIG_FILE) as f:
             return yaml.safe_load(f)
     return {}
 

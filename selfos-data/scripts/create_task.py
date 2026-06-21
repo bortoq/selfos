@@ -10,12 +10,12 @@ import json
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any
 
 DATA_DIR = Path("data/activity")
 
 
-def create_task_event(title: str, project: str = "Self OS", priority: int = 2) -> Dict[str, Any]:
+def create_task_event(title: str, project: str = "Self OS", priority: int = 2) -> dict[str, Any]:
     """Create a standardized task event"""
     timestamp = datetime.now().isoformat() + "Z"
 
@@ -33,14 +33,14 @@ def create_task_event(title: str, project: str = "Self OS", priority: int = 2) -
     }
 
 
-def save_event(event: Dict[str, Any]):
+def save_event(event: dict[str, Any]):
     """Save event to today's Activity Log"""
     date = event["timestamp"][:10]
     file_path = DATA_DIR / f"{date}.json"
 
     events = []
     if file_path.exists():
-        with open(file_path, 'r') as f:
+        with open(file_path) as f:
             events = json.load(f)
 
     events.append(event)

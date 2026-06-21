@@ -10,11 +10,10 @@ Generates intelligent suggestions by combining data from multiple sources:
 This demonstrates "умные" предложения на основе внешних данных.
 """
 
-from typing import List, Dict, Any
-from datetime import datetime, timedelta
+from typing import Any
 
 
-def get_recent_events(days: int = 3) -> List[Dict[str, Any]]:
+def get_recent_events(days: int = 3) -> list[dict[str, Any]]:
     """Mock function - in real version would read from Activity Log"""
     return [
         {"type": "event", "title": "Team sync meeting", "source": "google_calendar"},
@@ -23,14 +22,17 @@ def get_recent_events(days: int = 3) -> List[Dict[str, Any]]:
     ]
 
 
-def generate_smart_suggestions() -> List[str]:
+def generate_smart_suggestions() -> list[str]:
     """Generate smart suggestions based on recent activity"""
     events = get_recent_events()
     suggestions = []
 
     # Example logic
     has_meeting = any("meeting" in e["title"].lower() for e in events)
-    has_work_task = any("phase" in e["title"].lower() or "plugin" in e["title"].lower() for e in events)
+    has_work_task = any(
+        "phase" in e["title"].lower() or "plugin" in e["title"].lower()
+        for e in events
+    )
 
     if has_meeting:
         suggestions.append("Consider blocking focus time after the meeting")

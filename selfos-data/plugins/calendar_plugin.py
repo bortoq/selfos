@@ -5,9 +5,9 @@ Fetches events from Google Calendar.
 In real usage requires OAuth2 credentials.
 """
 
-import os
 from datetime import datetime, timedelta
-from typing import List, Dict, Any
+from typing import Any
+
 from .base_plugin import BasePlugin
 
 
@@ -15,12 +15,12 @@ class CalendarPlugin(BasePlugin):
     name = "google_calendar"
     description = "Imports events from Google Calendar"
 
-    def __init__(self, config: Dict[str, Any] = None):
+    def __init__(self, config: dict[str, Any] | None = None):
         super().__init__(config)
         self.calendar_id = self.config.get("calendar_id", "primary")
         self.days_back = self.config.get("days_back", 7)
 
-    def fetch(self) -> List[Dict[str, Any]]:
+    def fetch(self) -> list[dict[str, Any]]:
         """
         Fetch calendar events.
         Currently returns mock data. Replace with real Google Calendar API call.

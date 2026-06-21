@@ -4,9 +4,9 @@ Updates README.md with daily diagnostics from Activity Log
 """
 
 import json
-from pathlib import Path
 from collections import defaultdict
 from datetime import datetime
+from pathlib import Path
 
 DATA_DIR = Path("data/activity")
 README_PATH = Path("README.md")
@@ -15,7 +15,7 @@ README_PATH = Path("README.md")
 def load_events():
     events = []
     for file in DATA_DIR.glob("*.json"):
-        with open(file, 'r') as f:
+        with open(file) as f:
             events.extend(json.load(f))
     return events
 
@@ -50,7 +50,7 @@ def generate_score(stats):
     total = sum(stats["categories"].values())
     if total == 0:
         return 50
-    score = min(100, int((stats["completed"] * 10 + total * 2)))
+    score = min(100, int(stats["completed"] * 10 + total * 2))
     return min(score, 100)
 
 

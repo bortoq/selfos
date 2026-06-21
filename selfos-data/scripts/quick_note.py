@@ -8,15 +8,14 @@ This demonstrates the delegation pattern for note-taking.
 
 import json
 import sys
-import re
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Any
 
 DATA_DIR = Path("data/activity")
 
 
-def suggest_tags_and_category(text: str) -> Dict[str, Any]:
+def suggest_tags_and_category(text: str) -> dict[str, Any]:
     """Simple rule-based suggestion engine for notes"""
     text_lower = text.lower()
     tags = []
@@ -44,7 +43,7 @@ def suggest_tags_and_category(text: str) -> Dict[str, Any]:
     }
 
 
-def create_note_event(text: str, tags: List[str], category: str) -> Dict[str, Any]:
+def create_note_event(text: str, tags: list[str], category: str) -> dict[str, Any]:
     """Create a note event with suggestions"""
     timestamp = datetime.now().isoformat() + "Z"
 
@@ -63,20 +62,20 @@ def create_note_event(text: str, tags: List[str], category: str) -> Dict[str, An
     }
 
 
-def save_event(event: Dict[str, Any]):
+def save_event(event: dict[str, Any]):
     date = event["timestamp"][:10]
     file_path = DATA_DIR / f"{date}.json"
 
     events = []
     if file_path.exists():
-        with open(file_path, 'r') as f:
+        with open(file_path) as f:
             events = json.load(f)
 
     events.append(event)
     with open(file_path, 'w') as f:
         json.dump(events, f, indent=2, ensure_ascii=False)
 
-    print(f"Quick Note saved with suggestions.")
+    print("Quick Note saved with suggestions.")
 
 
 def main():

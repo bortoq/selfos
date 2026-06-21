@@ -34,7 +34,7 @@ def save_event(event):
 
     events = []
     if file_path.exists():
-        with open(file_path, 'r') as f:
+        with open(file_path) as f:
             events = json.load(f)
 
     # Avoid duplicates
