@@ -79,4 +79,4 @@ The main difference is the closed loop: metrics, planning, reflection, AI guidan
 
 ## Documents
 
-See [architecture.md](architecture.md), [use-cases.md](use-cases.md), [roadmap.md](roadmap.md), and [demo.md](demo.md).
+See [architecture.md](architecture.md), [use-cases.md](use-cases.md), [roadmap.md](roadmap.md), [strategy.md](strategy.md), and [demo.md](demo.md).
