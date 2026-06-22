@@ -87,7 +87,7 @@ class SecureTokenStore:
 
         # Try keyring first
         try:
-            import keyring as _kr  # type: ignore[import-untyped]
+            import keyring as _kr
             self._keyring = _kr
             self._backend = "keyring"
             logger.debug("TokenStore backend: keyring")

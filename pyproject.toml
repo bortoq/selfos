@@ -60,5 +60,8 @@ exclude = [
 module = [
   "yaml",
   "plugins.*",
+  "keyring",
+  "cryptography",
+  "cryptography.*",
 ]
 ignore_missing_imports = true
