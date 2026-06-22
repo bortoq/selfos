@@ -1,14 +1,26 @@
 # Self OS Roadmap
 
-**Последнее обновление:** 2026-06-22 (v2 — по результатам аудита)  
+**Последнее обновление:** 2026-06-22 (v3 — повторный аудит, 7.9 → 8.5/10)  
 **Текущая версия:** 0.4.0 (Phase 4: Platform — завершена)  
-**Оценка предыдущей версии roadmap:** 6.0/10 → целевая **8.5/10**
+**Оценка v2:** 7.9/10 → целевая **8.5/10**
 
 ---
 
-## Что изменено во v2 roadmap
+## Что изменено во v3 roadmap (относительно v2)
 
-| Пункт аудита | Что сделано |
+| Пункт аудита v2 | Что сделано |
+|---|---|
+| Action mapping семантически некорректен | `task_create: None`, `schedule: None` — нет автоматизации, только display/approve |
+| `trust × confidence` наивная формула | AND-gate с двумя порогами + пометка «confidence не калибрована» |
+| Capability permissions без enforcement | Явно: declaration-only, AST-check при install, enforcement в Phase 8 |
+| Google Cloud automation переоценена | Manual setup (5-10 мин), testing mode 7-day limitation, без gcloud CLI |
+| VCR secret leakage | filter_headers + pre-commit Bearer token scan |
+| Phase 7 concrete tech table | Убрана, заменена на «RFC при старте Phase 7» |
+| Migration / CI не описаны | Конкретные примеры миграции + CI changes раздел |
+
+## Что было закрыто в v2 roadmap (относительно v1)
+
+| Пункт аудита v1 | Что сделано |
 |---|---|
 | Security & Privacy — критические пробелы | Добавлен раздел Security (PII redaction, keyring, prompt injection, sandboxing) |
 | LLM ↔ DelegationEngine — нет связи | Добавлен раздел Integration: action mapping, confidence as trust modifier, hybrid flow |
@@ -19,7 +31,7 @@
 | VCR не упомянут | pytest-recording + VCR fixtures для integration tests |
 | Production Hardening отсутствует | Отдельная фаза между фичами и 1.0 |
 | Сроки оптимистичны ×2-3 | Все оценки удвоены с explicit buffer |
-| Слишком много кода | Кодовые скелеты сокращены до интерфейсов; детали RFC-уровня перенесены в `docs/rfc/` |
+| Слишком много кода | Кодовые скелеты сокращены до интерфейсов |
 
 ---
 
@@ -45,6 +57,18 @@
 
 **Общая длительность (один разработчик):** 5-7 месяцев до 1.0  
 **Множитель buffer:** ×2 от naive estimate (уже заложен в цифры выше)
+
+### Почему именно такой порядок (5a → 5b → 5c)
+
+| Порядок | Аргументы за | Аргументы против |
+|---|---|---|
+| **5a (Gmail) первой** | Самая полезная интеграция; OAuth infrastructure для всех; ранний риск-discovery | LLM не работает — нет данных для анализа |
+| **5b (LLM) после 5a** | LLM получает реальные письма (а не моки); prompt-шаблоны калибруются на реальных данных | LLM видит только Gmail + Activity Log — нет Calendar/Tasks |
+| **5c (Calendar/Todoist/GitHub) после 5b** | LLM-инфраструктура готова до добавления новых источников | LLM-промпты Phase 5b нужно расширить для новых sources (±1-2 дня) |
+
+**Альтернатива** (рассмотрена и отклонена): 5a → 5c → 5b (LLM последней).
+- Почему отклонена: без LLM, интеграции 5c — просто API wrappers. LLM даёт **смысл** интеграциям.
+- Компромисс: Phase 5c.4 «Hooks + LLM Integration» расширяет prompt-шаблоны Phase 5b для новых sources.
 
 ---
 
@@ -165,14 +189,9 @@ class PromptSanitizer:
 - LLM-ответ парсится через JSON schema validation + confidence cap 0.95 для данных из user context
 - При обнаружении injection — логирование + warning пользователю
 
-### S5. Plugin Sandboxing (Phase 6+)
+### S5. Plugin Permissions — Declaration Only (Enforcement в Phase 8)
 
-Community-плагины (установленные через `install_plugin_from_url`) **не** имеют доступа к:
-- `~/.selfos/tokens/` (OAuth токены)
-- `~/.selfos/tokens.enc` (зашифрованные токены)
-- `token_store.py` API
-
-Реализация: capability-based permissions в `plugin.yaml`:
+Community-плагины (установленные через `install_plugin_from_url`) **объявляют** нужные capabilities в `plugin.yaml`:
 
 ```yaml
 # plugin.yaml — community plugin
@@ -182,6 +201,15 @@ permissions:
   - notes:write       # Может писать заметки
   # НЕ может: email:read, calendar:read, tokens:read
 ```
+
+> **Важно: сейчас permissions — это только декларация.** Нет runtime enforcement.
+> Плагин с `import os; os.path.expanduser("~/.selfos/tokens")` обходит ограничение.
+>
+> **Enforcement (subprocess isolation + IPC) запланирован в Phase 8.**
+> До Phase 8 действует policy-based контроль:
+> - Community-плагины **всегда** запрашивают `selfos install --trust <plugin>` с явным подтверждением
+> - Плагины **не** могут импортировать `selfos.token_store` или `selfos.integrations.token_store` (AST-проверка при install)
+> - Рекомендация: «устанавливайте плагины только от доверенных авторов»
 
 ---
 
@@ -197,44 +225,68 @@ LLM возвращает `Suggestion.action` (строка: `email_reply`, `task
 
 ### Решение: Action Mapping
 
+LLM-действия маппятся на action_type в trust system. **Точная совместимость** — не все LLM-действия имеют аналог.
+
 ```python
 # Маппинг LLM actions → DelegationEngine action_types
-LLM_TO_DELEGATION_MAP = {
-    "email_reply": "email_send",
-    "email_draft": "email_send",
-    "task_create": "quick_note",       # или новое действие
-    "note": "quick_note",
-    "schedule": "event_categorization",
-    "categorize": "event_categorization",
-    "tag_suggest": "tag_suggestion",
-    "summarize": "daily_summary",
+# None = нет прямого аналога → "display_only" (LLM не может auto-execute)
+LLM_TO_DELEGATION_MAP: dict[str, str | None] = {
+    # ─── Email ───
+    "email_reply": "email_send",        # есть trust: email_send
+    "email_draft": "email_send",        # draft → тот же trust, что и отправка
+    
+    # ─── Notes ───
+    "note": "quick_note",               # есть trust: quick_note
+    
+    # ─── No direct equivalent — display only ───
+    "task_create": None,                # quick_note ≠ task (разные side effects)
+    "schedule": None,                   # event_categorization ≠ event creation
+    "categorize": "event_categorization",  # категоризация существующего — ок
+    "tag_suggest": None,                # нет action_type для тегов
+    "summarize": "daily_summary",       # есть trust: daily_summary
 }
+
+# Новые action_type для будущего расширения (Phase 5c+):
+# "task_create", "event_create", "email_draft" (отдельно от email_send)
 ```
 
-### Confidence → Trust Modifier
+**Принцип:** если маппинг = `None`, LLM suggestion показывается пользователю, но **никогда** не auto-execute. Пользователь может approve через `selfos suggest --approve <id>`.
+
+### Confidence → Trust: AND-gate (не произведение)
 
 ```python
 def evaluate_suggestion(self, suggestion: Suggestion) -> str:
     """
     Решение для LLM-suggestion'а.
     
-    confidence >= 0.9  → auto-execute (если trust ≥ threshold)
-    confidence 0.7-0.9 → queue for approval
-    confidence < 0.7   → display only
+    Два независимых порога:
+      - trust >= TRUST_THRESHOLD   (из delegation engine)
+      - confidence >= CONFIDENCE_MIN (от LLM)
+    
+    Оба должны быть выше порогов → AND-gate.
+    
+    ⚠️ Confidence НЕ калибрована. LLM выдаёт 0.95 для всего.
+       Используется как пользовательский фильтр, не как вероятность.
     """
     delegation_type = LLM_TO_DELEGATION_MAP.get(suggestion.action)
-    if not delegation_type:
-        return "display_only"  # Неизвестное действие — только показать
-    
-    base_trust = self.delegation_engine.get_trust(delegation_type)
-    effective_trust = base_trust * suggestion.confidence
-    
-    if effective_trust >= CRITICAL_THRESHOLD:
-        return "auto_execute"
-    elif effective_trust >= TRUST_THRESHOLD:
-        return "queue_for_approval"
-    else:
+    if delegation_type is None:
+        # Неизвестное действие — только показать
         return "display_only"
+    
+    trust = self.delegation_engine.get_trust(delegation_type)
+    confidence = suggestion.confidence
+    
+    # AND-gate: оба должны пройти
+    trust_ok = trust >= TRUST_THRESHOLD
+    confidence_ok = confidence >= CONFIDENCE_MIN  # e.g., 0.7
+    
+    if trust_ok and confidence_ok:
+        if trust >= CRITICAL_THRESHOLD:
+            return "auto_execute"
+        return "queue_for_approval"
+    
+    # Даже если один высокий — показать пользователю
+    return "display_only"
 ```
 
 ### Hybrid Flow (Draft → Approve → Execute)
@@ -291,7 +343,7 @@ DelegationEngine.evaluate_suggestion(suggestion)
 **Решения:**
 - **OAuth flow:** Browser-based (`http://localhost:8080/callback`) с fallback на **device flow** для headless сред
 - **Token storage:** `keyring` (macOS/Linux/Windows) → encrypted JSON fallback
-- **Google App Verification:** Каждый пользователь регистрирует **свой Google Cloud Project** через `selfos plugin setup gmail --create-project`. Автоматизация через gcloud CLI.
+- **Google App:** Каждый пользователь создаёт **свой Google Cloud Project** вручную (5-10 минут). Инструкция: `docs/setup-google-cloud.md`. Без verification — **testing mode** (refresh tokens живут 7 дней, re-auth раз в неделю). Verification занимает 4-6 недель Google review — **не планируется автоматизировать**.
 - **Multi-account:** `~/.selfos/profiles/{name}/tokens/` — профили для personal/work
 - **Rate limiter:** Persistent state в `~/.selfos/rate_limits.json`, leaky bucket + Retry-After header
 
@@ -365,7 +417,7 @@ tests/
 | Метрика | Цель |
 |---|---|
 | Latency P95 | < 3 секунды (с Ollama), < 5 секунд (cloud) |
-| Accuracy | ≥ 60% suggestions rated "useful" (`selfos suggest --rate`) |
+| Accuracy | ≥ 60% suggestions approved via `selfos suggest --approve` (auto-tracked) |
 | Cost | < $0.50/день (cloud, при 50000 токенов/день) |
 | Prompt injection | 0 successful bypasses в security tests |
 
@@ -573,11 +625,31 @@ VCR fixtures для каждой интеграции. E2E: OAuth → API → Pl
 - Deprecation policy: API N deprecated в N+1, removed в N+2
 - Breaking change policy: documented in CHANGELOG.md
 
-#### 6.3 — Error Tracking (4 дня)
+**Конкретные примеры миграции:**
 
-- Opt-in Sentry-like error reporting (`selfos config --telemetry on`)
-- Anonymous: error type, stack trace, OS, Python version
-- Never: PII, tokens, email content
+| Версия | Что меняется | Миграция |
+|---|---|---|
+| v0.5.0 (Phase 5a) | `~/.selfos/tokens/` → `~/.selfos/profiles/default/tokens/` | Авто: при первом запуске создать `profiles/default/` и переместить токены |
+| v0.7.0 (Phase 5c) | `rules.yaml` добавлены новые condition types | Авто: новые поля с default values, старый формат валиден |
+| v0.8.0 (Phase 6) | Структура логов `~/.selfos/logs/` | Авто: создать директорию, старые логи не трогать |
+
+**Формат `selfos.yaml` — stable:** изменения только через deprecated warnings в N, removal в N+1.
+**Persistent state (~/.selfos/data/):** JSON-формат, всегда backwards-compatible. Breaking changes — только через migration script.
+
+#### 6.3 — Telemetry & Error Tracking (4 дня)
+
+**Реальность:** «Sentry-like» требует central infrastructure. Self OS — self-hosted проект.
+
+**Решения:**
+- **Opt-in only** — по умолчанию выключено (`selfos config --telemetry off`)
+- **Backend:** Self-hosted Sentry (Docker compose) ИЛИ отправка в `https://telemetry.selfos.dev` (если foundation существует)
+- **Данные:** error type, stack trace (без local paths — sanitize `/Users/john/...` → `/Users/.../`), OS, Python version
+- **Never:** PII, tokens, email content, plugin data
+- **Retention:** 30 дней, auto-delete
+- **Privacy policy:** обязательна, если есть central endpoint (GDPR compliance)
+- **Headless:** если нет central endpoint — локальный JSON-лог ошибок в `~/.selfos/errors/`
+
+**Минимальная реализация (Phase 6):** локальный error log + opt-in structured error reporting.
 
 #### 6.4 — i18n Foundation (4 дня)
 
@@ -598,18 +670,13 @@ VCR fixtures для каждой интеграции. E2E: OAuth → API → Pl
 
 **Статус:** Планирование (после Phase 6)  
 **Цель:** Веб-интерфейс для не-технических пользователей.  
-**Время:** 10-14 недель (6 naive weeks × ~1.8 buffer)  
+**Время:** 14 недель (7 naive weeks × 2 buffer). Определение — после Phase 6, когда будет ясен scope.
 **Версия:** 1.0.0
 
-### Архитектурные решения (предварительные)
+### Архитектурные решения
 
-| Решение | Выбор | Обоснование |
-|---|---|---|
-| Backend | FastAPI | Асинхронный, автодокументация (OpenAPI), совместим с CLI |
-| Frontend | HTMX + Jinja2 | Минимальный JS, server-rendered, быстрый MVP |
-| Auth | JWT + API keys | CLI создаёт API key, Web UI логинится через него |
-| Real-time | Server-Sent Events | Для live suggestions, проще чем WebSocket |
-| Deployment | Docker compose | Self-hosted, один `docker compose up` |
+> **Не приняты до execution.** Технологический стек будет определён при старте Phase 7 на основе опыта Phase 5-6.
+> RFC-документ: `docs/rfc/phase7-web-ui.md` (будет создан по завершении Phase 6).
 
 ### KPI
 
@@ -644,7 +711,21 @@ pytest tests/ --vcr-record=all
 pytest tests/ --vcr-record=none
 ```
 
-**Cassettes** хранятся в `tests/cassettes/` и коммитятся в git (анонимизированные).
+**Cassettes** хранятся в `tests/cassettes/` и коммитятся в git.
+
+**Секретная санитизация (обязательна до записи первой cassette):**
+
+```toml
+# pyproject.toml
+[tool.vcr]
+record_mode = "none"  # в CI
+filter_headers = ["authorization", "cookie", "x-api-key"]
+# Тело ответа: фильтрация email-адресов и PII через custom hook
+```
+
+- Запись cassette **только локально** с реальными API keys (никогда в CI)
+- Pre-commit hook: `grep -rE 'Bearer [A-Za-z0-9._-]{20,}' tests/cassettes/` — блокирует коммит с токенами
+- При обнаружении secrets в diff → автоматический `git reset` + warning
 
 ### Security Tests (Phase 5b+)
 
@@ -658,6 +739,25 @@ pytest tests/ --vcr-record=none
 1. OAuth → Gmail → unread_count → LLM suggestion → approval → email sent
 2. OAuth → Calendar → create event → LLM schedule optimization
 3. Plugin install from URL → sandboxing verification
+
+---
+
+## CI/CD Changes для Phase 5+
+
+Текущий CI: ruff + mypy + pytest. После Phase 5a нужны дополнительные этапы:
+
+| Этап | Когда | Что делает |
+|---|---|---|
+| **VCR replay** | Phase 5a+ | `pytest --vcr-record=none` — replay against cassettes (без API keys) |
+| **Secret scan** | Phase 5a+ | Pre-commit + CI: `grep -rE 'Bearer \|token\|api_key' tests/cassettes/` |
+| **Security tests** | Phase 5b+ | Prompt injection, PII redaction — отдельный stage, может быть медленным |
+| **Cross-platform** | Phase 5a+ | keyring backend: macOS (Keychain), Linux (Secret Service), headless fallback |
+| **LLM tests** | Phase 5b+ | Требуют API keys → только в nightly builds, не в каждом PR |
+
+**Nightly builds** (добавить в `.github/workflows/ci.yml`):
+- Запись VCR cassettes против реальных API (раз в неделю)
+- Security scan (prompt injection test suite)
+- Cost tracking (сколько токенов за день в nightly)
 
 ---
 
