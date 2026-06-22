@@ -1,31 +1,27 @@
-version: 0.1
-name: Self OS Data
+delegation_defaults:
+  log_import: auto
 description: Personal activity log and delegation system
-
+force_review:
+  ? ''
+  : false
+  daily_summary: false
+  event_categorization: false
+  tag_suggestion: false
 modules:
-  - activity_log
-  - delegation_engine
-  - diagnostics
-
+- activity_log
+- delegation_engine
+- diagnostics
+name: Self OS Data
 settings:
   auto_import: true
   default_trust_threshold: 10
-
-delegation_defaults:
-  log_import: "auto"
-
-trust_thresholds:
-  event_categorization: 10
-  daily_summary: 5
-  tag_suggestion: 8
-  email_send: 7          # Пользователь может делегировать отправку писем после 7 успешных итераций
-
-force_review:
-  event_categorization: false
-  daily_summary: false
-  tag_suggestion: false
-
 sources:
-  - github
-  - calendar
-  - notes
+- github
+- calendar
+- notes
+trust_thresholds:
+  daily_summary: 5
+  email_send: 7
+  event_categorization: 10
+  tag_suggestion: 8
+version: 0.1

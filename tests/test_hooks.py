@@ -2,6 +2,7 @@
 Тесты для hooks.py — система точек расширения ядра.
 """
 
+from selfos.base_selfos_plugin import BaseSelfOSPlugin
 from selfos.hooks import (
     HookRegistry,
     get_hook_registry,
@@ -190,12 +191,15 @@ class TestPluginOnRegister:
 
         registered_hooks = []
 
-        class HookTestPlugin:
+        class HookTestPlugin(BaseSelfOSPlugin):
             name = "hook-test"
-            @classmethod
-            def on_register(cls, hr):
+            description = "Test"
+            version = "1.0.0"
+            def execute(self, **kwargs):
+                return {"result": "ok"}
+            def on_register(self, hr):
                 registered_hooks.append(True)
-                hr.subscribe("note:create", cls.name, lambda **x: x, hook_type="before")
+                hr.subscribe("note:create", self.name, lambda **x: x, hook_type="before")
 
         reg.register("hook-test", HookTestPlugin)
         assert len(registered_hooks) == 1

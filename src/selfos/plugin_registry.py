@@ -38,7 +38,9 @@ class PluginRegistry:
         if hasattr(plugin_class, 'on_register'):
             from selfos.hooks import get_hook_registry
             try:
-                plugin_class.on_register(get_hook_registry())
+                # Создаём временный экземпляр для вызова on_register
+                instance = plugin_class(self._get_default_config(name))
+                instance.on_register(get_hook_registry())
             except Exception:
                 pass
 

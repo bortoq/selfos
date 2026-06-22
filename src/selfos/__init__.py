@@ -10,4 +10,4 @@ try:
     __version__ = _metadata_version("selfos")
 except PackageNotFoundError:
     # fallback for development without install
-    __version__ = "0.3.0"
+    __version__ = "0.4.0"

@@ -204,3 +204,42 @@ selfos plugin install https://github.com/username/my-plugin
 3. **Testing**: Write tests that create isolated `PluginRegistry` instances
 4. **Versioning**: Follow semantic versioning for your plugin
 5. **Hooks**: Keep hook handlers fast; don't block the main thread
+
+---
+
+## Publishing Your Plugin
+
+### Add to Marketplace
+
+To add your plugin to the official Self OS marketplace:
+
+1. Fork the Self OS repository
+2. Add your plugin entry to `docs/plugin-marketplace.yaml`:
+
+```yaml
+  - name: "my-awesome-plugin"
+    version: "1.0.0"
+    description: "Does something amazing"
+    author: "Your Name"
+    entry_point: "my_awesome_plugin:MyAwesomePluginPlugin"
+    protocol: ""
+    repo_url: "https://github.com/yourname/my-awesome-plugin"
+    tags: ["utility", "productivity"]
+    rating: 0.0
+    downloads: 0
+```
+
+3. Submit a pull request
+
+### Publish via Git Repository
+
+If you host your plugin on GitHub/GitLab:
+
+```bash
+selfos plugin install https://github.com/yourname/my-awesome-plugin
+```
+
+The repository must contain:
+- `plugin.yaml` with valid `name`, `version`, `description`, `entry_point`
+- Python module(s) implementing the plugin class
+- `__init__.py` to make it a package
