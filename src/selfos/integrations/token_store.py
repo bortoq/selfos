@@ -201,7 +201,7 @@ class SecureTokenStore:
             return key_file.read_bytes()
 
         # Generate new key
-        key = Fernet.generate_key()
+        key = bytes(Fernet.generate_key())
         key_file.parent.mkdir(parents=True, exist_ok=True)
         key_file.write_bytes(key)
         os.chmod(str(key_file), 0o600)  # Owner read/write only
