@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, cast
 
 import httpx
@@ -43,7 +43,7 @@ class GoogleCalendarPlugin:
         return [self._normalize_event(item) for item in items if isinstance(item, dict)]
 
     def today(self) -> list[dict[str, Any]]:
-        start = datetime.now(UTC).replace(hour=0, minute=0, second=0, microsecond=0)
+        start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
         end = start + timedelta(days=1)
         return self.list_events(time_min=start.isoformat(), time_max=end.isoformat())
 
