@@ -1,6 +1,6 @@
 """
 Self OS - Personal Operating System
-Phase 3: Full Immersion
+Phase 4: Platform — Plugin Platform, Marketplace, Hooks, Delegation Rules
 """
 
 from importlib.metadata import PackageNotFoundError

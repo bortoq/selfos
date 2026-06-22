@@ -5,7 +5,6 @@ force_review:
   daily_summary: false
   event_categorization: false
   tag_suggestion: false
-  test: false
 modules:
 - activity_log
 - delegation_engine
