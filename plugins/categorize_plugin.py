@@ -38,10 +38,10 @@ class CategorizePlugin(BaseSelfOSPlugin):
         super().__init__(config)
 
     def execute(self, **kwargs: Any) -> dict[str, Any]:
-        title = kwargs['title']
         """
         Предлагает категорию для события.
         """
+        title = kwargs['title']
         category = suggest_category(title)
 
         return {

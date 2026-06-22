@@ -46,5 +46,5 @@ class BasePlugin(ABC):
         """Check if required configuration is present."""
         return True
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.name} Plugin"

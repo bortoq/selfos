@@ -21,16 +21,24 @@
 
 ```
 src/selfos/
+├── __init__.py
+├── __main__.py
+├── activity.py
+├── base_selfos_plugin.py
+├── browser.py
+├── cli.py
+├── config.py
+├── context_engine.py
+├── delegation_engine.py
 ├── event_factory.py
 ├── plugin_registry.py
-├── delegation_engine.py
-├── context_engine.py
-├── unified_interface.py
 ├── scheduler.py
-├── browser.py
+├── trust.py
+├── unified_interface.py
 └── email/
+    ├── __init__.py
     ├── base.py
-    ├── smtp_provider.py
     ├── delegation.py
-    └── service.py
+    ├── service.py
+    └── smtp_provider.py
 ```

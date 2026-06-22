@@ -228,13 +228,11 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
 
     if hasattr(args, "func"):
-        try:
-            # Через UnifiedInterface — единая точка входа
-            kwargs = {k: v for k, v in vars(args).items()
-                      if k not in ('func', 'command')}
-            interface.execute(args.command, **kwargs)
-        except Exception as e:
-            print(f"[ERROR] {e}")
+        kwargs = {k: v for k, v in vars(args).items()
+                  if k not in ('func', 'command')}
+        result = interface.execute(args.command, **kwargs)
+        if not result.get("success", True):
+            print(f"[ERROR] {result.get('error')}", file=sys.stderr)
             sys.exit(1)
     else:
         parser.print_help()

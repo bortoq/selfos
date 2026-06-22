@@ -31,7 +31,7 @@ class DailySummaryPlugin(BaseSelfOSPlugin):
         commits = sum(1 for e in events if e.get("type") == "commit")
         meetings = sum(1 for e in events if "meeting" in e.get("title", "").lower())
 
-        categories = {}
+        categories: dict[str, int] = {}
         for event in events:
             cat = event.get("metadata", {}).get("category", "Other")
             categories[cat] = categories.get(cat, 0) + 1

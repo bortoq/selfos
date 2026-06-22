@@ -128,3 +128,29 @@ def test_cli_unknown_command():
     """Unknown command: argparse exits with code 2."""
     with pytest.raises(SystemExit):
         main(["unknown-command-xyz"])
+
+
+def test_cli_propagates_handler_exceptions(capsys):
+    """CLI must exit with code 1 when a handler raises an exception."""
+    from selfos.unified_interface import interface
+
+    original = interface.handlers.get("status")
+    def broken(_args):
+        raise ValueError("intentional crash for test")
+    interface.register_handler("status", broken)
+    try:
+        with pytest.raises(SystemExit) as exc_info:
+            main(["status"])
+        assert exc_info.value.code == 1
+        captured = capsys.readouterr()
+        assert "intentional crash" in captured.err
+    finally:
+        interface.register_handler("status", original)
+
+
+def test_cli_happy_path_exit_zero(capsys):
+    """Happy path commands must not raise SystemExit."""
+    # Should complete without exception
+    main(["status"])
+    captured = capsys.readouterr()
+    assert "Self OS" in captured.out

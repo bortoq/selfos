@@ -49,10 +49,10 @@ class QuickNotePlugin(BaseSelfOSPlugin):
         super().__init__(config)
 
     def execute(self, **kwargs: Any) -> dict[str, Any]:
-        text = kwargs['text']
         """
         Создаёт заметку с делегированием.
         """
+        text = kwargs['text']
         suggestions = suggest_tags_and_category(text)
 
         event = EventFactory.create_note_event(

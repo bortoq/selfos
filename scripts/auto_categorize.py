@@ -5,6 +5,8 @@ Auto-categorize — CLI entry point.
 Uses categorize plugin via PluginRegistry.
 """
 
+import sys
+
 from selfos.plugin_registry import PluginRegistry
 
 
@@ -15,5 +17,4 @@ def main():
 
 
 if __name__ == "__main__":
-    import sys
     main()

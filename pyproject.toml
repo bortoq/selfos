@@ -40,6 +40,7 @@ select = ["E", "F", "I", "UP", "B"]
 "src/selfos/email/delegation.py" = ["E402"]
 
 [tool.mypy]
+mypy_path = "src"
 python_version = "3.11"
 strict = true
 warn_return_any = true

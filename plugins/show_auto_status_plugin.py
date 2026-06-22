@@ -11,7 +11,7 @@ class ShowAutoStatusPlugin(BaseSelfOSPlugin):
     name = "show_auto_status"
     description = "Shows current auto mode status for all actions"
 
-    def execute(self, **kwargs) -> dict[str, Any]:
+    def execute(self, **kwargs: Any) -> dict[str, Any]:
         # В реальной реализации здесь был бы вызов trust_manager_v2
         return {
             "status": "Auto status feature (stub)",
