@@ -27,7 +27,7 @@ jobs:
         run: |
           python -c "
           from plugins.calendar_plugin import CalendarPlugin
-          plugin = CalendarPlugin({'calendar_id': '${{ secrets.CALENDAR_ID || "primary" }}'})
+          plugin = CalendarPlugin({'calendar_id': '${{ secrets.CALENDAR_ID || 'primary' }}'})
           events = plugin.fetch()
           print(f'Calendar events fetched: {len(events)}')
           for e in events:
