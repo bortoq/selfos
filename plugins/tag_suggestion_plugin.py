@@ -21,7 +21,8 @@ class TagSuggestionPlugin(BaseSelfOSPlugin):
         (r"(personal|family|friend)", ["personal"]),
     ]
 
-    def execute(self, title: str, **kwargs) -> dict[str, Any]:
+    def execute(self, **kwargs: Any) -> dict[str, Any]:
+        title = kwargs.get('title', '')
         tags = self._suggest_tags(title)
         return {
             "title": title,

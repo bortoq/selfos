@@ -48,7 +48,8 @@ class QuickNotePlugin(BaseSelfOSPlugin):
     def __init__(self, config: dict[str, Any] = None):
         super().__init__(config)
 
-    def execute(self, text: str, **kwargs) -> dict[str, Any]:
+    def execute(self, **kwargs: Any) -> dict[str, Any]:
+        text = kwargs['text']
         """
         Создаёт заметку с делегированием.
         """

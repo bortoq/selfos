@@ -37,7 +37,8 @@ class CategorizePlugin(BaseSelfOSPlugin):
     def __init__(self, config: dict[str, Any] = None):
         super().__init__(config)
 
-    def execute(self, title: str, **kwargs) -> dict[str, Any]:
+    def execute(self, **kwargs: Any) -> dict[str, Any]:
+        title = kwargs['title']
         """
         Предлагает категорию для события.
         """

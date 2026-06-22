@@ -20,7 +20,8 @@ class DailySummaryPlugin(BaseSelfOSPlugin):
     def __init__(self, config: dict[str, Any] = None):
         super().__init__(config)
 
-    def execute(self, events: list[dict[str, Any]], **kwargs) -> dict[str, Any]:
+    def execute(self, **kwargs: Any) -> dict[str, Any]:
+        events = kwargs['events']
         """
         Генерирует сводку на основе списка событий.
         """

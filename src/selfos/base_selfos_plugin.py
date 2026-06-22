@@ -21,7 +21,7 @@ class BaseSelfOSPlugin(ABC):
         self.config = config or {}
 
     @abstractmethod
-    def execute(self, **kwargs: Any) -> Any:
+    def execute(self, **kwargs: Any) -> dict[str, Any]:
         """
         Основной метод выполнения плагина.
         """

@@ -11,7 +11,8 @@ class WeeklyReportPlugin(BaseSelfOSPlugin):
     name = "weekly_report"
     description = "Generates weekly activity report"
 
-    def execute(self, events: list[dict[str, Any]] = None, **kwargs) -> dict[str, Any]:
+    def execute(self, **kwargs: Any) -> dict[str, Any]:
+        events = kwargs.get('events')
         events = events or []
         if not events:
             return {"report": "No activity in the last 7 days."}

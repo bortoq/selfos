@@ -11,7 +11,8 @@ class SmartSuggestionsPlugin(BaseSelfOSPlugin):
     name = "smart_suggestions"
     description = "Generates smart proactive suggestions based on activity"
 
-    def execute(self, recent_events: list[dict[str, Any]] = None, **kwargs) -> dict[str, Any]:
+    def execute(self, **kwargs: Any) -> dict[str, Any]:
+        recent_events = kwargs.get('recent_events')
         suggestions = self._generate_suggestions(recent_events or [])
         return {
             "suggestions": suggestions

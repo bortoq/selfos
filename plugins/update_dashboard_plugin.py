@@ -11,7 +11,8 @@ class UpdateDashboardPlugin(BaseSelfOSPlugin):
     name = "update_dashboard"
     description = "Updates the Self OS dashboard with latest diagnostics"
 
-    def execute(self, events: list[dict[str, Any]] = None, **kwargs) -> dict[str, Any]:
+    def execute(self, **kwargs: Any) -> dict[str, Any]:
+        events = kwargs.get('events')
         events = events or []
         return {
             "status": "Dashboard updated",
