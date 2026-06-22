@@ -7,15 +7,14 @@ from pathlib import Path
 from selfos.plugin_marketplace import (
     MarketplacePlugin,
     PluginMarketplace,
-    compare_versions,
-    load_marketplace,
-    install_plugin_from_marketplace,
-    remove_plugin,
     check_for_updates,
-    update_plugin,
+    compare_versions,
     default_marketplace_path,
+    install_plugin_from_marketplace,
+    load_marketplace,
+    remove_plugin,
+    update_plugin,
 )
-
 
 # ─── Version comparison ───────────────────────────────────────────────
 
@@ -171,8 +170,8 @@ class TestInstallRemove:
     def test_install_from_marketplace(self, tmp_path: Path) -> None:
         """Test install + remove with isolated registry."""
         import sys
+
         from selfos.plugin_registry import PluginRegistry
-        from selfos.config import plugins_dir as get_plugins_dir
 
         # Add tmp plugins dir to sys.path for importlib
         plugins_root = str(tmp_path / "plugins")
@@ -204,8 +203,8 @@ class TestInstallRemove:
 
     def test_install_already_installed(self) -> None:
         """Installing an already-installed plugin should raise."""
-        from selfos.plugin_registry import PluginRegistry
         from selfos.plugin_manifest import PluginManifest
+        from selfos.plugin_registry import PluginRegistry
 
         # Register a plugin manually first
         PluginRegistry._get_global().register("duplicate", type("Dummy", (object,), {}))

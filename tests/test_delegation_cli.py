@@ -1,6 +1,5 @@
 from selfos.cli import build_parser
 
-
 # ─── Legacy delegation commands ───────────────────────────────────────
 
 def test_delegate_enable_command():

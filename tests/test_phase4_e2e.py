@@ -9,25 +9,24 @@ End-to-end тест Phase 4.
 import sys
 from pathlib import Path
 
-from selfos.plugin_manifest import PluginManifest
-from selfos.plugin_sdk import scaffold_plugin, validate_plugin
-from selfos.plugin_registry import PluginRegistry
-from selfos.plugin_marketplace import (
-    PluginMarketplace,
-    MarketplacePlugin,
-    install_plugin_from_marketplace,
-    remove_plugin,
-    check_for_updates,
-    update_plugin,
-    compare_versions,
-)
+from selfos.base_selfos_plugin import BaseSelfOSPlugin
 from selfos.hooks import (
-    HookRegistry,
+    HOOK_NOTE_CREATE,
     get_hook_registry,
     reset_hook_registry,
-    HOOK_NOTE_CREATE,
 )
-from selfos.base_selfos_plugin import BaseSelfOSPlugin
+from selfos.plugin_manifest import PluginManifest
+from selfos.plugin_marketplace import (
+    MarketplacePlugin,
+    PluginMarketplace,
+    check_for_updates,
+    compare_versions,
+    install_plugin_from_marketplace,
+    remove_plugin,
+    update_plugin,
+)
+from selfos.plugin_registry import PluginRegistry
+from selfos.plugin_sdk import scaffold_plugin, validate_plugin
 
 
 class TestPhase4E2E:
@@ -77,7 +76,7 @@ class TestPhase4E2E:
         safe_name = name.replace("-", "_")
         # The class is in safe_name.py inside the safe_name package
         module = importlib.import_module(f"{safe_name}.{safe_name}")
-        plugin_class = getattr(module, "E2ETestPluginPlugin")
+        plugin_class = module.E2ETestPluginPlugin
         errors = validate_plugin(plugin_class)
         assert errors == [], f"Validation errors: {errors}"
 
@@ -148,9 +147,7 @@ class TestPhase4E2E:
                 context["text"] = f"[HOOKED] {context.get('text', '')}"
                 return context
 
-        # Регистрируем через install (не register), используя экземпляр
-        from selfos.plugin_manifest import PluginManifest
-        registry = PluginRegistry()
+        # Прямая проверка: вызываем on_register вручную с экземпляром
 
         # Прямая проверка: вызываем on_register вручную с экземпляром
         instance = HookTestPlugin({})

@@ -1,10 +1,7 @@
 from pathlib import Path
 
-import pytest
-
 from selfos.delegation_engine import DelegationEngine
 from selfos.delegation_rules import DelegationRule
-
 
 # ─── Helper ───────────────────────────────────────────────────────────
 
@@ -60,6 +57,7 @@ def test_deny_rule_overrides_trust_default(tmp_path: Path):
     """
     engine = make_engine(tmp_path)
     import json
+
     from selfos.config import trust_file
     tf = trust_file()
     tf.parent.mkdir(parents=True, exist_ok=True)

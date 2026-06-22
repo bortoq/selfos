@@ -3,14 +3,12 @@
 """
 
 from pathlib import Path
+
 from selfos.delegation_rules import (
     DelegationRule,
     DelegationRuleSet,
     validate_rule_dict,
-    load_rules,
-    save_rules,
 )
-
 
 # ─── DelegationRule: создание и валидация ─────────────────────────────
 

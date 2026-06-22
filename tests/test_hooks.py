@@ -4,16 +4,16 @@
 
 from selfos.base_selfos_plugin import BaseSelfOSPlugin
 from selfos.hooks import (
+    ALL_HOOK_POINTS,
+    HOOK_AFTER,
+    HOOK_BEFORE,
+    HOOK_EMAIL_SEND,
+    HOOK_INSTEAD,
+    HOOK_NOTE_CREATE,
+    HOOK_TASK_CREATE,
     HookRegistry,
     get_hook_registry,
     reset_hook_registry,
-    HOOK_BEFORE,
-    HOOK_AFTER,
-    HOOK_INSTEAD,
-    HOOK_EMAIL_SEND,
-    HOOK_NOTE_CREATE,
-    HOOK_TASK_CREATE,
-    ALL_HOOK_POINTS,
 )
 
 
@@ -182,8 +182,8 @@ class TestPluginOnRegister:
     """Test that on_register is called during PluginRegistry.register()."""
 
     def test_on_register_called(self) -> None:
+        from selfos.hooks import get_hook_registry, reset_hook_registry
         from selfos.plugin_registry import PluginRegistry
-        from selfos.hooks import reset_hook_registry, get_hook_registry
 
         reset_hook_registry()
         reg = PluginRegistry()
