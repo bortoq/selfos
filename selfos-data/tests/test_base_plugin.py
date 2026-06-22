@@ -1,5 +1,4 @@
 import pytest
-
 from plugins.base_plugin import BasePlugin
 
 

@@ -18,6 +18,7 @@ trust_thresholds:
   event_categorization: 10
   daily_summary: 5
   tag_suggestion: 8
+  email_send: 7          # Пользователь может делегировать отправку писем после 7 успешных итераций
 
 force_review:
   event_categorization: false

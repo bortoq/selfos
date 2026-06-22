@@ -1,0 +1,31 @@
+name: Validate Architecture Contract
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check required architecture components
+        run: |
+          echo "Checking EventFactory..."
+          test -f src/selfos/event_factory.py || exit 1
+          echo "Checking PluginRegistry..."
+          test -f src/selfos/plugin_registry.py || exit 1
+          echo "Checking BaseSelfOSPlugin..."
+          test -f src/selfos/base_selfos_plugin.py || exit 1
+          echo "All required components exist."
+
+      - name: Check that key scripts have been migrated to plugins
+        run: |
+          echo "Checking that quick_note.py is migrated..."
+          if [ -f scripts/quick_note.py ]; then echo "ERROR: scripts/quick_note.py should be removed"; exit 1; fi
+          echo "Checking that categorize.py is migrated..."
+          if [ -f scripts/categorize.py ]; then echo "ERROR: scripts/categorize.py should be removed"; exit 1; fi
+          echo "All old scripts have been properly migrated."

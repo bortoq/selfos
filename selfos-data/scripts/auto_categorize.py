@@ -6,8 +6,7 @@ Auto Categorization - commits category directly when trust threshold is reached.
 import json
 import re
 from pathlib import Path
-
-from scripts.trust_manager import can_auto, increase_trust
+from scripts.trust_manager import can_auto, increase_trust, get_threshold
 
 DATA_DIR = Path("data/activity")
 CATEGORIES = ["Work", "Personal", "Health", "Finance", "Other"]
@@ -49,7 +48,7 @@ def main():
         print("No events found.")
         return
 
-    with open(files[-1]) as f:
+    with open(files[-1], 'r') as f:
         events = json.load(f)
 
     changed = False

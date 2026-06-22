@@ -1,3 +1,4 @@
+import pytest
 from scripts.categorize import suggest_category
 
 

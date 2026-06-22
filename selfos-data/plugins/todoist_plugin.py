@@ -4,8 +4,7 @@ Todoist Plugin for Self OS
 Fetches tasks from Todoist.
 """
 
-from typing import Any
-
+from typing import List, Dict, Any
 from .base_plugin import BasePlugin
 
 
@@ -13,11 +12,11 @@ class TodoistPlugin(BasePlugin):
     name = "todoist"
     description = "Imports tasks from Todoist"
 
-    def __init__(self, config: dict[str, Any] | None = None):
+    def __init__(self, config: Dict[str, Any] = None):
         super().__init__(config)
         self.project_id = self.config.get("project_id")
 
-    def fetch(self) -> list[dict[str, Any]]:
+    def fetch(self) -> List[Dict[str, Any]]:
         """
         Fetch tasks from Todoist.
         Currently returns mock data.
@@ -50,7 +49,7 @@ class TodoistPlugin(BasePlugin):
         ]
         return tasks
 
-    def push(self, event: dict[str, Any]) -> bool:
+    def push(self, event: Dict[str, Any]) -> bool:
         """
         Create a new task in Todoist (stub).
         """

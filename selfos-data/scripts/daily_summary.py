@@ -5,9 +5,9 @@ Creates a short daily summary based on Activity Log.
 """
 
 import json
-from collections import defaultdict
-from datetime import datetime
 from pathlib import Path
+from datetime import datetime, timedelta
+from collections import defaultdict
 
 DATA_DIR = Path("data/activity")
 
@@ -17,7 +17,7 @@ def load_today_events():
     events = []
     for file in DATA_DIR.glob("*.json"):
         if file.stem == today:
-            with open(file) as f:
+            with open(file, 'r') as f:
                 events.extend(json.load(f))
     return events
 

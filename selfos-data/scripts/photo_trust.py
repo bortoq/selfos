@@ -5,7 +5,7 @@ Photo Classification Trust Handler
 Extends trust system to photo_classification action.
 """
 
-from trust_manager_v2 import can_auto, get_threshold, increase_trust
+from scripts.trust_manager_v2 import increase_trust, can_auto, get_threshold
 
 
 def classify_and_trust(filename: str, suggested_category: str) -> dict:

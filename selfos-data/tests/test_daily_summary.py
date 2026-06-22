@@ -1,3 +1,4 @@
+import pytest
 from scripts.daily_summary import generate_summary
 
 

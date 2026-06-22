@@ -35,7 +35,7 @@ def main():
         print("No events found.")
         return
 
-    with open(files[-1]) as f:
+    with open(files[-1], 'r') as f:
         events = json.load(f)
 
     for event in events[-5:]:

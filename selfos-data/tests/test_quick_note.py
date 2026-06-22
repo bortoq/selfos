@@ -1,3 +1,4 @@
+import pytest
 from scripts.quick_note import suggest_tags_and_category
 
 

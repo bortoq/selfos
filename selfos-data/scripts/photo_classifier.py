@@ -13,10 +13,12 @@ Currently uses simple filename-based rules.
 Later can be replaced with real computer vision.
 """
 
+import os
 import json
-from datetime import datetime
+import re
 from pathlib import Path
-from typing import Any
+from datetime import datetime
+from typing import Dict, Any
 
 MEDIA_DIR = Path("media")
 DATA_DIR = Path("data/activity")
@@ -38,7 +40,7 @@ def classify_photo(filename: str) -> str:
         return "other"
 
 
-def create_photo_event(filename: str, category: str) -> dict[str, Any]:
+def create_photo_event(filename: str, category: str) -> Dict[str, Any]:
     """Create standardized Activity Log event for a photo"""
     timestamp = datetime.now().isoformat() + "Z"
 
@@ -56,14 +58,14 @@ def create_photo_event(filename: str, category: str) -> dict[str, Any]:
     }
 
 
-def save_event(event: dict[str, Any]):
+def save_event(event: Dict[str, Any]):
     """Save event to today's Activity Log file"""
     date = event["timestamp"][:10]
     file_path = DATA_DIR / f"{date}.json"
 
     events = []
     if file_path.exists():
-        with open(file_path) as f:
+        with open(file_path, 'r') as f:
             events = json.load(f)
 
     # Avoid duplicates

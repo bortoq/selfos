@@ -6,6 +6,7 @@ In Review mode it creates GitHub Issues.
 """
 
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -44,7 +45,7 @@ def main():
         print("No events found.")
         return
 
-    with open(files[-1]) as f:
+    with open(files[-1], 'r') as f:
         events = json.load(f)
 
     for event in events[-5:]:

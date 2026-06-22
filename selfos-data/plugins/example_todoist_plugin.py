@@ -4,8 +4,7 @@ Example Todoist Plugin for Self OS
 Template plugin for importing tasks from Todoist.
 """
 
-from typing import Any
-
+from typing import List, Dict, Any
 from .base_plugin import BasePlugin
 
 
@@ -17,11 +16,11 @@ class TodoistPlugin(BasePlugin):
     name = "todoist"
     description = "Imports tasks from Todoist"
 
-    def __init__(self, config: dict[str, Any] | None = None):
+    def __init__(self, config: Dict[str, Any] = None):
         super().__init__(config)
         self.project_id = self.config.get("project_id")
 
-    def fetch(self) -> list[dict[str, Any]]:
+    def fetch(self) -> List[Dict[str, Any]]:
         """
         Fetch tasks from Todoist.
         Currently returns mock data.

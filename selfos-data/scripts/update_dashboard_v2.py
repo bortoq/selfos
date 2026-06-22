@@ -5,11 +5,10 @@ Updates README.md with diagnostics + Suggested Actions + Trust levels.
 """
 
 import json
+import yaml
+from pathlib import Path
 from collections import defaultdict
 from datetime import datetime
-from pathlib import Path
-
-import yaml
 
 DATA_DIR = Path("data/activity")
 README_PATH = Path("README.md")
@@ -19,14 +18,14 @@ TRUST_FILE = Path("data/trust.json")
 
 def load_config():
     if CONFIG_FILE.exists():
-        with open(CONFIG_FILE) as f:
+        with open(CONFIG_FILE, 'r') as f:
             return yaml.safe_load(f)
     return {}
 
 
 def load_trust():
     if TRUST_FILE.exists():
-        with open(TRUST_FILE) as f:
+        with open(TRUST_FILE, 'r') as f:
             return json.load(f)
     return {}
 
@@ -34,7 +33,7 @@ def load_trust():
 def load_events():
     events = []
     for file in DATA_DIR.glob("*.json"):
-        with open(file) as f:
+        with open(file, 'r') as f:
             events.extend(json.load(f))
     return events
 
@@ -68,7 +67,7 @@ def generate_score(stats):
     total = sum(stats["categories"].values())
     if total == 0:
         return 50
-    score = min(100, int(stats["completed"] * 10 + total * 2))
+    score = min(100, int((stats["completed"] * 10 + total * 2)))
     return min(score, 100)
 
 
