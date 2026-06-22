@@ -19,16 +19,20 @@ Plugins live in `plugins/` and are registered in `src/selfos/plugin_registry.py`
 - **Method**: `execute()`
 - **Returns**: list of action suggestions
 
-### 3. Photo Classifier (`scripts/photo_trust.py`)
-- **Purpose**: Classify photos into categories (food, receipt, people, document, other)
-- **Integration**: Trust-based auto-classification support
+### 3. Daily Summary Plugin (`plugins/daily_summary_plugin.py`)
+- **Purpose**: Generate daily summary of events and activity
+- **Method**: `execute(events: list)`
+- **Returns**: summary string with statistics
+
+> **Note:** Photo classification (`scripts/photo_trust.py`) exists as a standalone script,
+> not a plugin. It uses the trust system via `selfos.trust` for auto-classification.
 
 ## How to Add a New Plugin
 
 1. Create a new file in `plugins/`
 2. Inherit from `BaseSelfOSPlugin`
 3. Implement `execute()` method
-4. Register in `src/selfos/plugin_registry.py` via `PluginRegistry.register("name", PluginClass)`
+4. Register in `src/selfos/plugin_registry.py` via `registry.register("name", PluginClass)` in `_auto_register()`
 5. Optionally add CLI integration in `src/selfos/cli.py`
 
 ## Trust Integration

@@ -6,10 +6,13 @@ Context Engine for Self OS (Phase 3)
 """
 
 import json
+import logging
 from collections import defaultdict
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
 class ContextEngine:
@@ -50,12 +53,14 @@ class ContextEngine:
             category_count[cat] += 1
 
             # Анализ поздней работы
-            try:
-                hour = int(event["timestamp"][11:13])
-                if cat == "Work" and hour >= 20:
-                    late_work_count += 1
-            except Exception:
-                pass
+            ts = event.get("timestamp", "")
+            if ts:
+                try:
+                    hour = datetime.fromisoformat(ts).hour
+                    if cat == "Work" and hour >= 20:
+                        late_work_count += 1
+                except (ValueError, TypeError):
+                    logger.warning("Не удалось распарсить timestamp: %s", ts)
 
             if cat == "Health":
                 health_events += 1

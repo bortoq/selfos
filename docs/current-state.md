@@ -15,22 +15,26 @@
 | Scheduler | ✅ Работает |
 | Browser Service | ✅ Работает |
 | Delegation Engine | ✅ Работает |
-| UnifiedInterface (заготовка под Web/Voice) | ⏸ Зарезервирован |
+| UnifiedInterface (единая точка входа) | ✅ Работает (CLI, заготовка Web/Voice) |
 | Web Interface | ⏸ Заглушка |
 
 ## Метрики качества
 
 | Метрика | Значение |
 |---------|---------|
-| Тесты | 79 passed |
+| Тесты | 92 passed |
 | Ruff | 0 errors |
-| Mypy (src/selfos/) | 0 errors |
-| Покрытие | 64% |
+| Mypy (src/selfos/) | 0 errors (21 files) |
+| Покрытие | ~66% |
 | CI | Блокирует регрессии |
 
 ## Что сделано
 
 - P0: CLI, мёртвый код, workflows — исправлено
 - P1: Бизнес-логика из scripts/ → src/selfos/, print → logging, ruff
-- P2: UUID v4, изоляция тестов, smoke-тесты CLI
+- P2: UUID v4, изоляция тестов, smoke-тесты CLI, CLI error propagation
 - P3: Mypy strict 0 errors, docs обновлены
+- P3: Зачистка scripts/tag_suggestion.py (дубликат плагина)
+- P2: PluginRegistry — инстанс-базированный (тестируемый)
+- P2: plugin_contracts.py — TypedDicts + Protocols для плагинов
+- Fix: context_engine — except:pass → logging, timestamp с offset
