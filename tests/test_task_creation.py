@@ -1,4 +1,4 @@
-from scripts.create_task import create_task_event
+from selfos.activity import create_task_event
 
 
 def test_create_task_event_structure():

@@ -1,4 +1,4 @@
-from src.selfos.scheduler import Scheduler
+from selfos.scheduler import Scheduler
 
 
 def test_add_task():

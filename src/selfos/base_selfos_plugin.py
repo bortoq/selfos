@@ -17,11 +17,11 @@ class BaseSelfOSPlugin(ABC):
     name: str = "base"
     description: str = "Base Self OS Plugin"
 
-    def __init__(self, config: dict[str, Any] = None):
+    def __init__(self, config: dict[str, Any] | None = None) -> None:
         self.config = config or {}
 
     @abstractmethod
-    def execute(self, **kwargs) -> Any:
+    def execute(self, **kwargs: Any) -> Any:
         """
         Основной метод выполнения плагина.
         """

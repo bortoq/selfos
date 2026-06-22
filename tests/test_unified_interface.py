@@ -1,4 +1,4 @@
-from src.selfos.unified_interface import UnifiedInterface
+from selfos.unified_interface import UnifiedInterface
 
 
 def test_unified_interface_register_and_execute():

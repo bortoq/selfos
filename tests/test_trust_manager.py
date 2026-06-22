@@ -1,9 +1,12 @@
-from scripts.trust_manager_v2 import (
+"""Tests for trust manager with isolated tmp_path."""
+
+from selfos.trust import (
     can_auto,
     get_threshold,
     increase_trust,
     reset_trust,
 )
+from src.selfos import trust as trust_module
 
 
 def test_default_thresholds():
@@ -13,8 +16,9 @@ def test_default_thresholds():
     assert get_threshold("quick_note") == 5
 
 
-def test_increase_trust():
+def test_increase_trust(monkeypatch, tmp_path):
     """Проверяем увеличение счётчика доверия"""
+    monkeypatch.setattr(trust_module, "TRUST_FILE", tmp_path / "trust.json")
     reset_trust("test_action")
     count = increase_trust("test_action")
     assert count == 1
@@ -25,8 +29,9 @@ def test_increase_trust():
     reset_trust("test_action")
 
 
-def test_can_auto():
+def test_can_auto(monkeypatch, tmp_path):
     """Проверяем логику перехода в auto-режим"""
+    monkeypatch.setattr(trust_module, "TRUST_FILE", tmp_path / "trust.json")
     reset_trust("test_action")
 
     # По умолчанию порог = 10

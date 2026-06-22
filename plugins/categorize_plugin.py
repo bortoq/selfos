@@ -7,7 +7,7 @@ CategorizePlugin — плагин для категоризации событи
 import re
 from typing import Any
 
-from src.selfos.base_selfos_plugin import BaseSelfOSPlugin
+from selfos.base_selfos_plugin import BaseSelfOSPlugin
 
 RULES = [
     (r"(meeting|standup|call|sync)", "Work"),

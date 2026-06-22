@@ -4,14 +4,7 @@ Email Delegation Logic
 Интеграция с системой доверия Self OS.
 """
 
-import sys
-from pathlib import Path
-
-# Добавляем корневую папку проекта для импорта
-project_root = Path(__file__).parent.parent.parent.parent
-sys.path.insert(0, str(project_root))
-
-from scripts.trust_manager_v2 import can_auto, get_threshold, increase_trust
+from selfos.trust import can_auto, get_threshold, increase_trust
 
 
 def can_delegate_email() -> bool:
@@ -19,12 +12,15 @@ def can_delegate_email() -> bool:
     return can_auto("email_send")
 
 
+from typing import Any
+
+
 def suggest_email_with_trust(
     to: str,
     subject: str,
     body: str,
     sender: str = "user"
-) -> dict:
+) -> dict[str, Any]:
     """
     Предлагает текст письма и проверяет уровень доверия.
     """

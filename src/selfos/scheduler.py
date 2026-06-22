@@ -8,8 +8,8 @@ Scheduler Module for Self OS (Phase 3)
 from datetime import datetime, timedelta
 from typing import Any
 
-from scripts.create_task import create_task_event
-from scripts.create_task import save_event as save_activity
+from selfos.activity import create_task_event
+from selfos.activity import save_event as save_activity
 
 
 class Scheduler:
@@ -17,7 +17,7 @@ class Scheduler:
     Встроенный планировщик задач и событий Self OS.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.tasks: list[dict[str, Any]] = []
         self.events: list[dict[str, Any]] = []
 

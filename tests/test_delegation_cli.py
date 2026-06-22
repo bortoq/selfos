@@ -1,4 +1,4 @@
-from src.selfos.cli import build_parser
+from selfos.cli import build_parser
 
 
 def test_delegate_enable_command():

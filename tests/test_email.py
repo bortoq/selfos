@@ -1,5 +1,5 @@
-from src.selfos.email.base import EmailMessage
-from src.selfos.email.smtp_provider import SMTPProvider
+from selfos.email.base import EmailMessage
+from selfos.email.smtp_provider import SMTPProvider
 
 
 def test_email_message_creation():

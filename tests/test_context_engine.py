@@ -1,4 +1,4 @@
-from src.selfos.context_engine import ContextEngine
+from selfos.context_engine import ContextEngine
 
 
 def test_context_engine_empty():

@@ -4,7 +4,7 @@ WeeklyReportPlugin — плагин для генерации еженедель
 
 from typing import Any
 
-from src.selfos.base_selfos_plugin import BaseSelfOSPlugin
+from selfos.base_selfos_plugin import BaseSelfOSPlugin
 
 
 class WeeklyReportPlugin(BaseSelfOSPlugin):

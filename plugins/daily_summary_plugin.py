@@ -6,7 +6,7 @@ DailySummaryPlugin — плагин для генерации ежедневно
 
 from typing import Any
 
-from src.selfos.base_selfos_plugin import BaseSelfOSPlugin
+from selfos.base_selfos_plugin import BaseSelfOSPlugin
 
 
 class DailySummaryPlugin(BaseSelfOSPlugin):

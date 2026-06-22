@@ -17,12 +17,12 @@ class ContextEngine:
     Анализирует Activity Log и формирует контекстные инсайты.
     """
 
-    def __init__(self, data_dir: str = "data/activity"):
+    def __init__(self, data_dir: str = "data/activity") -> None:
         self.data_dir = Path(data_dir)
         self.events: list[dict[str, Any]] = []
         self._load_events()
 
-    def _load_events(self, days: int = 30):
+    def _load_events(self, days: int = 30) -> None:
         """Загружает события за последние N дней"""
         self.events = []
         today = datetime.now().date()
@@ -40,7 +40,7 @@ class ContextEngine:
             return {"message": "Недостаточно данных для анализа"}
 
         # Анализ по категориям
-        category_count = defaultdict(int)
+        category_count: dict[str, int] = defaultdict(int)
         late_work_count = 0
         health_events = 0
 

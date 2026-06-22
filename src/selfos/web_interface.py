@@ -11,7 +11,7 @@ class WebInterface:
     Заготовка веб-интерфейса Self OS.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.routes: dict[str, str] = {
             "/": "Self OS Dashboard (coming soon)",
             "/status": "System status",

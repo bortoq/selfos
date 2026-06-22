@@ -18,14 +18,14 @@ class UnifiedInterface:
     Единый интерфейс Self OS.
     """
 
-    def __init__(self):
-        self.handlers: dict[str, Callable] = {}
+    def __init__(self) -> None:
+        self.handlers: dict[str, Callable[..., Any]] = {}
 
-    def register_handler(self, command: str, handler: Callable):
+    def register_handler(self, action: str, handler: Callable[..., Any]) -> None:
         """Регистрирует обработчик команды"""
-        self.handlers[command] = handler
+        self.handlers[action] = handler
 
-    def execute(self, command: str, **kwargs) -> dict[str, Any]:
+    def execute(self, command: str, **kwargs: Any) -> dict[str, Any]:
         """Выполняет команду через единый интерфейс"""
         if command not in self.handlers:
             return {
@@ -47,7 +47,7 @@ class UnifiedInterface:
                 "error": str(e)
             }
 
-    def list_commands(self) -> list:
+    def list_commands(self) -> list[str]:
         return list(self.handlers.keys())
 
 
@@ -55,9 +55,9 @@ class UnifiedInterface:
 interface = UnifiedInterface()
 
 
-def register_default_handlers():
+def register_default_handlers() -> None:
     """Регистрирует базовые обработчики"""
-    from src.selfos.cli import (
+    from selfos.cli import (
         cmd_browser,
         cmd_context,
         cmd_delegate,

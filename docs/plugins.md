@@ -2,45 +2,65 @@
 
 ## Overview
 
-Self OS supports external integrations through a plugin system.  
-All plugins inherit from `BasePlugin` and implement the `fetch()` method (and optionally `push()`).
+Self OS supports external integrations through a plugin system.
+All plugins inherit from `BasePlugin` and implement the `execute()` method.
 
-## Available Plugins
+Plugins are registered in `src/selfos/plugin_registry.py` via `@PluginRegistry.register()`.
 
-### 1. Calendar Plugin (`calendar_plugin.py`)
-- **Service**: Google Calendar (mock implementation)
-- **Purpose**: Import calendar events into Activity Log
-- **Methods**: `fetch()`
-- **Configuration**: `calendar_id`
+## Available Built-in Plugins
 
-### 2. Todoist Plugin (`todoist_plugin.py`)
-- **Service**: Todoist
-- **Purpose**: Import tasks and create new tasks
-- **Methods**: `fetch()`, `push()`
-- **Configuration**: `project_id` (optional)
+### 1. Quick Note Plugin (`src/selfos/plugins/quick_note_plugin.py`)
+- **Purpose**: Create quick notes with smart tag suggestions
+- **Method**: `execute(text: str)`
+- **Returns**: suggested tags + category
 
-### 3. Photo Classifier (`photo_classifier.py`)
+### 2. Smart Suggestions Plugin (`src/selfos/plugins/smart_suggestions_plugin.py`)
+- **Purpose**: Generate proactive suggestions based on context
+- **Method**: `execute()`
+- **Returns**: list of action suggestions
+
+### 3. Photo Classifier (`scripts/photo_trust.py`)
 - **Purpose**: Classify photos into categories (food, receipt, people, document, other)
-- **Integration**: Triggered via GitHub Action when files are added to `media/`
+- **Integration**: Trust-based auto-classification support
 
 ## How to Add a New Plugin
 
-1. Create a new file in `plugins/`
+1. Create a new file in `src/selfos/plugins/`
 2. Inherit from `BasePlugin`
-3. Implement `fetch()` method
-4. Optionally implement `push()`
-5. Add the plugin to `.github/workflows/import-external.yml`
+3. Implement `execute()` method
+4. Decorate with `@PluginRegistry.register("plugin_name")`
+5. Optionally add CLI integration in `src/selfos/cli.py`
 
 ## Trust Integration
 
-New actions from plugins can be tracked using `trust_manager_v2.py`:
+New actions from plugins can be tracked using `src/selfos/trust.py`:
 - `calendar_import`
 - `todoist_import`
 - `photo_classification`
+- `quick_note`
+
+Trust thresholds are configured in `selfos.yaml`:
+```yaml
+trust_thresholds:
+  photo_classification: 6
+  calendar_import: 8
+  todoist_import: 8
+  quick_note: 5
+```
+
+## Plugin Registry
+
+```python
+from src.selfos.plugin_registry import PluginRegistry
+
+# Get a plugin
+plugin = PluginRegistry.get_plugin("quick_note")
+result = plugin.execute(text="Hello world")
+```
 
 ## Future Improvements
 
 - Real API integrations (Google Calendar, Todoist)
+- External plugin loading
+- Plugin lifecycle hooks
 - OAuth2 support
-- Error handling and retries
-- Rate limiting

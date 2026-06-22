@@ -4,7 +4,7 @@ AutoCategorizePlugin — плагин для автоматической кат
 
 from typing import Any
 
-from src.selfos.base_selfos_plugin import BaseSelfOSPlugin
+from selfos.base_selfos_plugin import BaseSelfOSPlugin
 
 
 class AutoCategorizePlugin(BaseSelfOSPlugin):

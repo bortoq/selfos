@@ -2,14 +2,15 @@
 PluginRegistry — реестр плагинов Self OS.
 """
 
+from typing import Any
 
 
 class PluginRegistry:
     _plugins: dict[str, type] = {}
-    _instances: dict[str, object] = {}
+    _instances: dict[str, Any] = {}
 
     @classmethod
-    def register(cls, name: str, plugin_class: type):
+    def register(cls, name: str, plugin_class: type) -> None:
         if not name:
             raise ValueError("Plugin name cannot be empty")
         if name in cls._plugins:
@@ -17,7 +18,7 @@ class PluginRegistry:
         cls._plugins[name] = plugin_class
 
     @classmethod
-    def get_plugin(cls, name: str, config: dict | None = None) -> object:
+    def get_plugin(cls, name: str, config: dict[str, Any] | None = None) -> Any:
         if name not in cls._plugins:
             raise ValueError(f"Plugin '{name}' is not registered")
         if name not in cls._instances:
@@ -30,7 +31,7 @@ class PluginRegistry:
         return list(cls._plugins.keys())
 
     @classmethod
-    def clear(cls):
+    def clear(cls) -> None:
         cls._plugins.clear()
         cls._instances.clear()
 

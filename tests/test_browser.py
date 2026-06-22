@@ -1,4 +1,4 @@
-from src.selfos.browser import BrowserService
+from selfos.browser import BrowserService
 
 
 def test_browser_add_and_get_link():

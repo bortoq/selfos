@@ -5,18 +5,19 @@ Self OS CLI - Phase 3
 
 import argparse
 import sys
+from typing import Any
 
-from src.selfos.event_factory import EventFactory
-from src.selfos.plugin_registry import PluginRegistry
+from selfos.event_factory import EventFactory
+from selfos.plugin_registry import PluginRegistry
 
 
-def cmd_note(args):
+def cmd_note(args: Any) -> None:
     plugin = PluginRegistry.get_plugin("quick_note")
     result = plugin.execute(text=" ".join(args.text))
     print(f"Note saved with tags: {', '.join(result['suggestions']['suggested_tags'])}")
 
 
-def cmd_task(args):
+def cmd_task(args: Any) -> None:
     title = " ".join(args.text)
     EventFactory.create_task_event(
         title,
@@ -26,13 +27,13 @@ def cmd_task(args):
     print(f"Task created: {title}")
 
 
-def cmd_status(args):
+def cmd_status(args: Any) -> None:
     print("=== Self OS Status ===")
     print("Phase: 3 - Full Immersion")
     print("Status: Active")
 
 
-def cmd_suggest(args):
+def cmd_suggest(args: Any) -> None:
     plugin = PluginRegistry.get_plugin("smart_suggestions")
     result = plugin.execute()
     print("=== Smart Suggestions ===")
@@ -40,8 +41,8 @@ def cmd_suggest(args):
         print(f"- {s}")
 
 
-def cmd_email(args):
-    from src.selfos.email.service import EmailService
+def cmd_email(args: Any) -> None:
+    from selfos.email.service import EmailService
     service = EmailService()
 
     if args.subcommand == "send":
@@ -70,8 +71,8 @@ def cmd_email(args):
         print(f"Body:\n{suggestion['message']['body']}")
 
 
-def cmd_schedule(args):
-    from src.selfos.scheduler import Scheduler
+def cmd_schedule(args: Any) -> None:
+    from selfos.scheduler import Scheduler
     scheduler = Scheduler()
 
     if args.subcommand == "task":
@@ -89,8 +90,8 @@ def cmd_schedule(args):
                 print(f"- {e['title']} @ {e['timestamp']}")
 
 
-def cmd_browser(args):
-    from src.selfos.browser import BrowserService
+def cmd_browser(args: Any) -> None:
+    from selfos.browser import BrowserService
     browser = BrowserService()
 
     if args.subcommand == "open":
@@ -105,8 +106,8 @@ def cmd_browser(args):
             print(f"- {link.name}: {link.url}")
 
 
-def cmd_context(args):
-    from src.selfos.context_engine import ContextEngine
+def cmd_context(args: Any) -> None:
+    from selfos.context_engine import ContextEngine
     engine = ContextEngine()
 
     if args.subcommand == "summary":
@@ -118,8 +119,8 @@ def cmd_context(args):
             print(f"- {s}")
 
 
-def cmd_delegate(args):
-    from src.selfos.delegation_engine import DelegationEngine
+def cmd_delegate(args: Any) -> None:
+    from selfos.delegation_engine import DelegationEngine
 
     engine = DelegationEngine()
 
@@ -134,7 +135,7 @@ def cmd_delegate(args):
         print(f"{args.action_type}: {'AUTO' if allowed else 'REVIEW'}")
 
 
-def build_parser():
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="selfos", description="Self OS - Personal Operating System"
     )
@@ -221,7 +222,7 @@ def build_parser():
     return parser
 
 
-def main(argv: list[str] | None = None):
+def main(argv: list[str] | None = None) -> None:
     parser = build_parser()
     args = parser.parse_args(argv)
 

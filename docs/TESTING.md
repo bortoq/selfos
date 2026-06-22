@@ -1,44 +1,64 @@
-# Phase 1 Testing Guide
+# Self OS Testing Guide
 
-## Цель Phase 1
-Проверить работу нескольких типов делегируемых действий, механики доверия и auto-режима.
+## Запуск тестов
 
-## Что тестировать
+```bash
+# Из корня проекта
+PYTHONPATH=/home/user/work/selfos python3 -m pytest tests/ -v
 
-### 1. Несколько типов действий одновременно
-- Убедись, что в `selfos.yaml` настроены разные пороги для:
-  - `event_categorization`
-  - `daily_summary`
-  - `tag_suggestion`
+# С coverage
+PYTHONPATH=/home/user/work/selfos python3 -m pytest tests/ --cov=src/selfos
 
-### 2. Механика доверия
-- Проверь, что trust counter увеличивается при принятии предложений.
-- Проверь работу скрипта `trust_manager.py` (сброс счётчика).
+# Только smoke-тесты CLI
+PYTHONPATH=/home/user/work/selfos python3 -m pytest tests/test_cli_smoke.py -v
 
-### 3. Auto-режим
-- Используй `enable_auto.py` для включения/выключения auto-режима.
-- Проверь `auto_categorize.py` — работает ли автоматическая категоризация при достижении порога.
+# Только trust manager
+PYTHONPATH=/home/user/work/selfos python3 -m pytest tests/test_trust_manager.py -v
+```
 
-### 4. Дашборд
-- Запусти `update_dashboard_v2.py`
-- Убедись, что в `README.md` отображаются:
-  - Диагностика
-  - Секция **Suggested Actions & Trust Levels**
-  - Текущий статус каждого действия (AUTO / REVIEW)
+## Структура тестов
 
-### 5. Еженедельный отчёт
-- Запусти `weekly_report.py`
-- Убедись, что Action `weekly-report.yml` создаёт Issue с отчётом.
+| Файл                          | Что тестирует                          |
+|-------------------------------|----------------------------------------|
+| `test_cli_smoke.py`          | CLI entry points (status, note, task) |
+| `test_trust_manager.py`      | Trust counters, thresholds, auto-mode  |
+| `test_photo_trust.py`        | Photo classification trust integration |
+| `test_task_creation.py`      | Event creation structure               |
+| `test_categorize.py`         | Category suggestion logic              |
+| `test_plugin_registry.py`    | Plugin loading and execution           |
+| `test_scheduler.py`          | Task/event scheduling                  |
+| `test_email_service.py`      | Email sending and delegation           |
+| ...                          | ...                                    |
 
-## Рекомендуемый порядок тестирования
+## Что тестируется
 
-1. Сделай несколько событий в `data/activity/`
-2. Запусти `categorize-events.yml` (Review mode)
-3. Прими 3–5 предложений категорий
-4. Запусти `update_dashboard_v2.py` и проверь README
-5. Включи auto-режим для `event_categorization`
-6. Запусти `auto_categorize.py`
-7. Сгенерируй Weekly Report
+### CLI (Phase 3)
+- `selfos status` — проверка вывода статуса
+- `selfos note "text"` — создание заметки через plugin
+- `selfos task "title"` — создание задачи через EventFactory
+- `selfos suggest` — получение предложений
+- `selfos browser links` — список быстрых ссылок
+- Обработка отсутствующих/неверных аргументов
 
-## Завершение Phase 1
-После успешного прохождения всех проверок Phase 1 считается завершённой.
+### Trust Manager
+- Пороги доверия для разных типов действий
+- Увеличение счётчика при успешных выполнениях
+- Автоматический переход в AUTO-режим при достижении порога
+- Принудительный REVIEW через `force_review` в `selfos.yaml`
+
+### EventFactory
+- Создание событий с UUID v4 (нет коллизий)
+- Валидация source, event_type, title
+- Единый формат для всех типов событий
+
+## Изоляция тестов
+
+- Тесты trust_manager используют `tmp_path` + `monkeypatch` — не пишут в реальный `data/trust.json`
+- Все тесты независимы и не оставляют побочных эффектов
+
+## CI/CD
+
+- GitHub Actions (`.github/workflows/ci.yml`)
+- `pytest` — обязателен (без `|| true`)
+- `ruff` — проверка линтинга (0 errors)
+- `mypy` — проверка типов (опционально)

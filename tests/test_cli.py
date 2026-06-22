@@ -1,6 +1,6 @@
 import pytest
 
-from src.selfos.cli import build_parser
+from selfos.cli import build_parser
 
 
 def test_cli_note_command():

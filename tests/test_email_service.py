@@ -1,4 +1,4 @@
-from src.selfos.email.service import EmailService
+from selfos.email.service import EmailService
 
 
 def test_email_service_validation():

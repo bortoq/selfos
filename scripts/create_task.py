@@ -1,54 +1,15 @@
 #!/usr/bin/env python3
 """
-Create Task via Self OS
+Create Task via Self OS (CLI entry point).
 
-Allows creating tasks that are recorded in the Activity Log.
-Can later be pushed to Todoist or other services via plugins.
+Core logic moved to src/selfos/activity.py.
 """
 
-import json
 import sys
-from datetime import datetime
-from pathlib import Path
-from typing import Any
 
-DATA_DIR = Path("data/activity")
+from selfos.activity import create_task_event, save_event
 
-
-def create_task_event(title: str, project: str = "Self OS", priority: int = 2) -> dict[str, Any]:
-    """Create a standardized task event"""
-    timestamp = datetime.now().isoformat() + "Z"
-
-    return {
-        "id": f"task-{datetime.now().strftime('%Y%m%d%H%M%S')}",
-        "timestamp": timestamp,
-        "source": "selfos",
-        "type": "task",
-        "title": title,
-        "metadata": {
-            "project": project,
-            "priority": priority,
-            "created_via": "selfos"
-        }
-    }
-
-
-def save_event(event: dict[str, Any]):
-    """Save event to today's Activity Log"""
-    date = event["timestamp"][:10]
-    file_path = DATA_DIR / f"{date}.json"
-
-    events = []
-    if file_path.exists():
-        with open(file_path) as f:
-            events = json.load(f)
-
-    events.append(event)
-    file_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(file_path, 'w') as f:
-        json.dump(events, f, indent=2, ensure_ascii=False)
-
-    print(f"Task created and saved: {event['title']}")
+__all__ = ["create_task_event", "save_event"]
 
 
 def main():

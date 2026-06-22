@@ -5,7 +5,10 @@ Provides quick access and navigation to web services.
 This is a lightweight abstraction layer.
 """
 
+import logging
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
 class QuickLink:
@@ -29,11 +32,11 @@ class BrowserService:
     Service for managing quick access to web services and navigation.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.links: dict[str, QuickLink] = {}
         self._init_default_links()
 
-    def _init_default_links(self):
+    def _init_default_links(self) -> None:
         """Initialize common useful links"""
         defaults = [
             ("gmail", "https://mail.google.com", "email"),
@@ -65,14 +68,14 @@ class BrowserService:
         """Simulate opening a link (returns the URL)"""
         link = self.get_link(name)
         if link:
-            print(f"[BROWSER] Opening: {link.url}")
+            logger.info("Opening: %s", link.url)
             return link.url
         else:
-            print(f"[BROWSER] Link '{name}' not found")
+            logger.warning("Link '%s' not found", name)
             return ""
 
     def search(self, query: str) -> str:
         """Simulate web search"""
         url = f"https://duckduckgo.com/?q={query.replace(' ', '+')}"
-        print(f"[BROWSER] Searching for: {query}")
+        logger.info("Searching for: %s", query)
         return url

@@ -1,4 +1,4 @@
-from src.selfos.delegation_engine import DelegationEngine
+from selfos.delegation_engine import DelegationEngine
 
 
 def test_critical_actions_never_auto():

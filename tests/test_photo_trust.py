@@ -1,8 +1,12 @@
+"""Tests for photo classification trust integration."""
+
 from scripts.photo_trust import classify_and_trust
-from scripts.trust_manager_v2 import increase_trust, reset_trust
+from selfos.trust import increase_trust, reset_trust
+from src.selfos import trust as trust_module
 
 
-def test_classify_and_trust_review_mode():
+def test_classify_and_trust_review_mode(monkeypatch, tmp_path):
+    monkeypatch.setattr(trust_module, "TRUST_FILE", tmp_path / "trust.json")
     reset_trust("photo_classification")
 
     result = classify_and_trust("test.jpg", "food")
@@ -10,7 +14,8 @@ def test_classify_and_trust_review_mode():
     assert result["category"] == "food"
 
 
-def test_classify_and_trust_auto_mode():
+def test_classify_and_trust_auto_mode(monkeypatch, tmp_path):
+    monkeypatch.setattr(trust_module, "TRUST_FILE", tmp_path / "trust.json")
     reset_trust("photo_classification")
 
     # Делаем 6 успешных классификаций (порог = 6)
