@@ -19,10 +19,12 @@ class GmailPlugin:
         oauth_manager: Any,
         http_client: httpx.Client | Any | None = None,
         user_id: str = "me",
+        base_url: str = "https://gmail.googleapis.com",
     ) -> None:
         self._oauth_manager = oauth_manager
         self._http = http_client or httpx.Client(timeout=30.0)
         self._user_id = user_id
+        self._base_url = base_url.rstrip("/")
 
     def fetch(self) -> list[dict[str, Any]]:
         return self.list_messages(unread_only=True)
@@ -89,7 +91,7 @@ class GmailPlugin:
 
     def _get(self, path: str, *, params: dict[str, Any] | None = None) -> dict[str, Any]:
         response = self._http.get(
-            f"https://gmail.googleapis.com{path}",
+            f"{self._base_url}{path}",
             headers=self._auth_headers(),
             params=params,
         )
@@ -98,7 +100,7 @@ class GmailPlugin:
 
     def _post(self, path: str, *, json: dict[str, str]) -> dict[str, Any]:
         response = self._http.post(
-            f"https://gmail.googleapis.com{path}",
+            f"{self._base_url}{path}",
             headers=self._auth_headers(),
             json=json,
         )

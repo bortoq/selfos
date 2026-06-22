@@ -31,7 +31,7 @@ class DelegationEngine:
     }
     LLM_TO_DELEGATION_MAP: dict[str, str | None] = {
         "email_reply": "email_send",
-        "task_create": "quick_note",
+        "task_create": None,
         "note": "quick_note",
         "review_context": None,
         "review_schedule": None,

@@ -4,6 +4,34 @@ All notable changes to Self OS are documented here.
 
 ---
 
+## [0.6.0] — 2026-06-22 — Phase 5b: LLM-powered Suggestions
+
+### Features
+- Unified `SuggestionEngine` with `rules` and `llm` backends
+- Ollama default runtime with automatic fallback to rules-based suggestions
+- OpenAI and Anthropic provider adapters with mock-tested request handling
+- Prompt templates, semantic cache, local suggestion state, ratings, and stats
+- CLI: `selfos suggest --llm --provider ... --approve --rate --stats --clear-cache`
+- CLI: `selfos config llm` for provider/model/api key configuration
+
+### Security
+- PII redaction before LLM calls
+- Prompt sanitizer integrated in `SuggestionEngine`
+- Explicit cloud opt-in for `openai` and `anthropic`
+
+---
+
+## [0.5.0] — 2026-06-22 — Phase 5a: OAuth2 Foundation + Gmail
+
+### Features
+- OAuth2 infrastructure with browser and device flows
+- Profile-aware token storage and runtime paths
+- Persistent integration rate limiter
+- Gmail plugin with unread count, list, read, send, search, and labels
+- CLI: `selfos gmail ...`, `selfos plugin setup gmail`, `selfos profile ...`
+
+---
+
 ## [0.4.0] — 2026-06-22 — Phase 4: Platform
 
 ### Stage 5 — Stabilization & Documentation

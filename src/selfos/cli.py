@@ -238,6 +238,15 @@ def _create_suggestion_engine() -> SuggestionEngine:
     return SuggestionEngine()
 
 
+def _confirm_cloud_opt_in(provider: str) -> bool:
+    answer = input(
+        f"Warning: {provider} sends redacted context to a cloud LLM provider. "
+        "Email subjects, event titles, and task names may still be visible. "
+        "Proceed with cloud access? [y/N]: "
+    ).strip().lower()
+    return answer in {"y", "yes"}
+
+
 def _edit_text_in_editor(initial_text: str = "") -> str:
     editor = os.getenv("EDITOR")
     if not editor:
@@ -289,6 +298,15 @@ def cmd_config(args: Any) -> None:
         print(json.dumps(llm_config(), indent=2, ensure_ascii=False))
         return
 
+    current = llm_config()
+    requested_provider = args.provider or current.get("provider")
+    is_cloud_provider = requested_provider in {"openai", "anthropic"}
+    has_cloud_opt_in = bool(args.cloud_opt_in or current.get("cloud_opt_in"))
+    if is_cloud_provider and not has_cloud_opt_in:
+        if not _confirm_cloud_opt_in(str(requested_provider)):
+            raise ValueError("Cloud provider requires explicit opt-in.")
+        has_cloud_opt_in = True
+
     updates: dict[str, Any] = {}
     if args.provider:
         updates["provider"] = args.provider
@@ -296,7 +314,7 @@ def cmd_config(args: Any) -> None:
         updates["model"] = args.model
     if args.api_key:
         updates["api_key"] = args.api_key
-    if args.cloud_opt_in:
+    if args.cloud_opt_in or has_cloud_opt_in:
         updates["cloud_opt_in"] = True
     print(json.dumps(update_llm_config(updates), indent=2, ensure_ascii=False))
 

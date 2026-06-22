@@ -61,6 +61,12 @@ class SuggestionEngine:
         context = self._build_context()
         prompt = self._prompts.render("suggest_general", context)
         redacted = self._redactor.redact_text(prompt)
+        if self._sanitizer.has_suspicious_patterns(redacted.text):
+            self._store.record_stats(requests=1, fallbacks=1, suspicious_context=1)
+            return self._rules_response(
+                mode="rules_fallback",
+                fallback_reason="suspicious_context",
+            )
         input_tokens = llm_provider.count_tokens(redacted.text)
         if not self._cost_guard.can_spend(
             model=llm_provider.model,

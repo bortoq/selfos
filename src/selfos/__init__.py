@@ -1,6 +1,6 @@
 """
 Self OS - Personal Operating System
-Phase 4: Platform — Plugin Platform, Marketplace, Hooks, Delegation Rules
+Phase 5b: Unified Suggestions — OAuth, Gmail, LLM Providers, Suggestion Pipeline
 """
 
 from importlib.metadata import PackageNotFoundError
@@ -10,4 +10,4 @@ try:
     __version__ = _metadata_version("selfos")
 except PackageNotFoundError:
     # fallback for development without install
-    __version__ = "0.4.0"
+    __version__ = "0.6.0"

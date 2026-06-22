@@ -21,12 +21,15 @@ Self OS помогает пользователю:
 
 ## Текущий статус
 
-**Phase 4 полностью завершена** (все 5 этапов — Plugin Platform: Manifest, SDK, Marketplace, Hooks, Stabilization)
+**Phase 5b завершена**: поверх завершённой Phase 4 добавлены OAuth/Gmail integration и unified LLM suggestion pipeline.
 
 - Полноценная работа с почтой + делегирование
+- Gmail OAuth + Gmail CLI integration
 - Встроенный планировщик задач и событий
 - Браузерная навигация и быстрый доступ
 - Context Engine с проактивными предложениями
+- Unified `SuggestionEngine` (`rules` + `llm`)
+- Ollama по умолчанию, OpenAI/Anthropic через explicit cloud opt-in
 - Глубокое делегирование (Zero-input delegation)
 - Единый интерфейс (CLI + заготовка Web)
 
@@ -43,6 +46,8 @@ selfos task "Название задачи" --priority 1
 selfos email send user@example.com "Тема" "Текст письма" --auto
 selfos schedule list tasks
 selfos context suggest
+selfos suggest --llm
+selfos gmail unread_count
 selfos delegate status email_send
 ```
 
@@ -62,6 +67,8 @@ Self OS построен на следующих ключевых компоне
 - `DelegationEngine` — глубокое делегирование
 - `ContextEngine` — анализ паттернов и проактивные предложения
 - `UnifiedInterface` — единая точка входа
+- `OAuthManager` / `SecureTokenStore` — foundation для внешних интеграций
+- `SuggestionEngine` — единый pipeline suggestions
 
 ## Лицензия
 

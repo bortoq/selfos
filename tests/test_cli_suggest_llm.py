@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+from pathlib import Path
+
+import pytest
+
 from selfos.cli import main
 
 
@@ -45,6 +49,13 @@ class FakeEngine:
         self.cache_cleared = True
 
 
+@pytest.fixture
+def isolated_llm_config(monkeypatch, tmp_path: Path) -> Path:
+    config_path = tmp_path / "selfos.yaml"
+    monkeypatch.setattr("selfos.config.config_file", lambda: config_path)
+    return config_path
+
+
 def test_cli_suggest_llm_falls_back_to_rules(monkeypatch, capsys) -> None:
     monkeypatch.setattr("selfos.cli._create_suggestion_engine", lambda: FakeEngine())
     main(["suggest", "--llm"])
@@ -64,3 +75,27 @@ def test_cli_suggest_approve_rate_stats_and_clear_cache(monkeypatch, capsys) -> 
     assert engine.rated == ("s1", 5)
     assert engine.cache_cleared is True
     assert "requests" in captured.out.lower()
+
+
+def test_cli_config_llm_openai_prompts_for_cloud_opt_in(
+    monkeypatch,
+    capsys,
+    isolated_llm_config: Path,
+) -> None:
+    monkeypatch.setattr("builtins.input", lambda prompt: "y")
+    main(["config", "llm", "--provider", "openai", "--api-key", "secret"])
+    captured = capsys.readouterr()
+    assert '"provider": "openai"' in captured.out
+    assert '"cloud_opt_in": true' in captured.out.lower()
+    assert "cloud_opt_in: true" in isolated_llm_config.read_text(encoding="utf-8")
+
+
+def test_cli_config_llm_openai_rejects_without_cloud_opt_in(
+    monkeypatch,
+    isolated_llm_config: Path,
+) -> None:
+    monkeypatch.setattr("builtins.input", lambda prompt: "n")
+    with pytest.raises(SystemExit) as exc_info:
+        main(["config", "llm", "--provider", "openai", "--api-key", "secret"])
+    assert exc_info.value.code == 1
+    assert not isolated_llm_config.exists()

@@ -1,4 +1,4 @@
-# Current State — Phase 4 Complete (5/5)
+# Current State — Phase 5b Complete
 
 **Дата:** 2026-06-22
 
@@ -6,7 +6,7 @@
 
 | Компонент | Статус |
 |-----------|--------|
-| CLI (`selfos status / note / task / ...`) | ✅ Работает |
+| CLI (`selfos status / note / task / gmail / suggest --llm / ...`) | ✅ Работает |
 | EventFactory (UUID v4, tz-aware) | ✅ Работает |
 | PluginRegistry + все плагины | ✅ Работает |
 | Trust Manager (доверие + auto-режим) | ✅ Работает |
@@ -17,15 +17,19 @@
 | Delegation Engine | ✅ Работает |
 | UnifiedInterface (единая точка входа) | ✅ Работает (CLI, заготовка Web/Voice) |
 | Plugin Platform (Manifest + SDK + CLI) | ✅ Работает (Phase 4, Stage 1) |
+| OAuth2 + Token Store + Rate Limiter | ✅ Работает (Phase 5a) |
+| Gmail Integration | ✅ Работает (Phase 5a) |
+| Unified SuggestionEngine (`rules` + `llm`) | ✅ Работает (Phase 5b) |
+| LLM Providers + Prompt System | ✅ Работает (Phase 5b) |
 | Web Interface | ⏸ Заглушка |
 
 ## Метрики качества
 
 | Метрика | Значение |
 |---------|---------|
-| Тесты | 207 passed |
+| Тесты | 237 passed |
 | Ruff | 0 errors |
-| Mypy (src/selfos/) | 0 errors (26 files) |
+| Mypy (src/selfos/) | 0 errors (38 files) |
 | Покрытие | ~66% |
 | CI | Блокирует регрессии |
 
@@ -68,3 +72,14 @@
   - Community Plugins: install from Git URL (selfos plugin install <url>)
   - Rating + downloads fields in MarketplacePlugin
   - Developer documentation: docs/plugin-development.md
+- Phase 5a:
+  - OAuth2 manager with browser and device flows
+  - Secure token store with profile-aware paths
+  - Persistent rate limiter for integrations
+  - Gmail plugin + CLI + profile management
+- Phase 5b:
+  - Unified `SuggestionEngine` with `rules` and `llm` modes
+  - Ollama default runtime + OpenAI/Anthropic adapters
+  - Prompt templates, cost guard, stats, ratings, cache
+  - Prompt sanitizer + PII redaction
+  - `selfos config llm`

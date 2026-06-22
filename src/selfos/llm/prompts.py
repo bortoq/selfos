@@ -10,6 +10,14 @@ from selfos.config import prompts_dir
 
 
 class PromptManager:
+    VALID_ACTIONS = [
+        "email_reply",
+        "task_create",
+        "note",
+        "review_context",
+        "review_schedule",
+    ]
+
     def __init__(self, user_dir: Path | None = None) -> None:
         self._user_dir = user_dir or prompts_dir()
         self._builtin_dir = Path(__file__).with_name("templates")
@@ -32,9 +40,8 @@ class PromptManager:
         template = self.load_template(name)
         context_json = json.dumps(context, ensure_ascii=False, indent=2, sort_keys=True)
         return (
-            f"{template['system']}\n\n"
-            f"{template['user_template']}\n"
-            "<USER_DATA_START>\n"
-            f"{context_json}\n"
-            "<USER_DATA_END>\n"
+            f"{template['system']}\n\n" + template["user_template"].format(
+                context_json=context_json,
+                valid_actions_json=json.dumps(self.VALID_ACTIONS, ensure_ascii=False),
+            )
         )

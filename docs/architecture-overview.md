@@ -1,4 +1,4 @@
-# Self OS Architecture Overview (Phase 4)
+# Self OS Architecture Overview (Phase 5b)
 
 ## Основные компоненты
 
@@ -14,6 +14,14 @@
 | **DelegationEngine** | Делегирование + кастомные правила | `src/selfos/delegation_engine.py` |
 | **Delegation Rules** | Пользовательские правила делегирования | `src/selfos/delegation_rules.py` |
 | **ContextEngine** | Анализ паттернов и проактивные предложения | `src/selfos/context_engine.py` |
+| **OAuthManager** | OAuth2 browser/device flows | `src/selfos/integrations/oauth_manager.py` |
+| **SecureTokenStore** | Profile-aware token storage | `src/selfos/integrations/token_store.py` |
+| **RateLimiter** | Persistent rate limiting for integrations | `src/selfos/integrations/rate_limiter.py` |
+| **GmailPlugin** | Gmail REST integration | `src/selfos/plugins/gmail_plugin.py` |
+| **SuggestionEngine** | Единый pipeline suggestions (`rules` + `llm`) | `src/selfos/llm/suggestion_engine.py` |
+| **LLM Providers** | Ollama/OpenAI/Anthropic adapters | `src/selfos/llm/providers.py` |
+| **PromptManager** | Built-in and user prompt templates | `src/selfos/llm/prompts.py` |
+| **CostGuard** | Daily cost limit + semantic cache key | `src/selfos/llm/cost_guard.py` |
 | **UnifiedInterface** | Единая точка входа (CLI / Web / Voice) | `src/selfos/unified_interface.py` |
 | **Trust Manager** | Система доверия (счётчики, пороги) | `src/selfos/trust.py` |
 
@@ -30,7 +38,7 @@
 
 ```
 src/selfos/
-├── __init__.py              # v0.4.0 (Phase 4)
+├── __init__.py              # v0.6.0 (Phase 5b)
 ├── base_selfos_plugin.py    # Базовый класс + on_register()
 ├── browser.py               # Browser service
 ├── cli.py                   # CLI (все команды, делегирование в API)
@@ -45,6 +53,24 @@ src/selfos/
 ├── plugin_marketplace.py    # Marketplace + install/remove/update (Phase 4)
 ├── plugin_registry.py       # Реестр плагинов
 ├── plugin_sdk.py            # SDK для плагинов (Phase 4)
+├── integrations/
+│   ├── __init__.py
+│   ├── oauth_manager.py
+│   ├── rate_limiter.py
+│   └── token_store.py
+├── llm/
+│   ├── __init__.py
+│   ├── cost_guard.py
+│   ├── models.py
+│   ├── prompts.py
+│   ├── providers.py
+│   ├── security.py
+│   ├── state.py
+│   ├── suggestion_engine.py
+│   └── templates/
+├── plugins/
+│   ├── __init__.py
+│   └── gmail_plugin.py
 ├── scheduler.py             # Планировщик задач
 ├── trust.py                 # Система доверия
 ├── unified_interface.py     # Единый интерфейс
@@ -63,6 +89,11 @@ selfos note <text>           # Создать заметку (триггерит
 selfos task <text>           # Создать задачу (триггерит хуки)
 selfos status                # Статус системы
 selfos suggest               # Проактивные предложения (триггерит хуки)
+selfos suggest --llm         # LLM-backed suggestions with rules fallback
+selfos config llm            # Конфигурация LLM provider / model
+selfos gmail list/read/send  # Gmail integration
+selfos plugin setup gmail    # OAuth setup for Gmail
+selfos profile create/switch # Профили для интеграций
 selfos email send/suggest    # Email операции
 selfos schedule task/event/list  # Планировщик
 selfos browser open/search/links # Браузер

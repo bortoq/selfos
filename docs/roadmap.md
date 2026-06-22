@@ -1,7 +1,7 @@
 # Self OS Roadmap
 
 **Последнее обновление:** 2026-06-22 (v3 — повторный аудит, 7.9 → 8.5/10)  
-**Текущая версия:** 0.4.0 (Phase 4: Platform — завершена)  
+**Текущая версия:** 0.6.0 (Phase 5b: LLM-powered Suggestions — завершена)  
 **Оценка v2:** 7.9/10 → целевая **8.5/10**
 
 ---
@@ -40,11 +40,11 @@
 ```
 2026-06-22 ─── Phase 4 завершена (0.4.0) ✅
     │
-    ├── Phase 5a: OAuth2 Foundation + Gmail          [20 дней, v0.5.0]
+    ├── Phase 5a: OAuth2 Foundation + Gmail          [20 дней, v0.5.0] ✅
     │   └── Ранний риск-discovery по OAuth + первая реальная польза
     │
-    ├── Phase 5b: LLM-powered Suggestions            [25 дней, v0.6.0]
-    │   └── LLM работает с реальными письмами, а не моками
+    ├── Phase 5b: LLM-powered Suggestions            [25 дней, v0.6.0] ✅
+    │   └── Unified suggestion pipeline + Ollama default runtime
     │
     ├── Phase 5c: Calendar + Todoist + GitHub         [25 дней, v0.7.0]
     │   └── LLM подсказывает по всем источникам
@@ -311,7 +311,7 @@ DelegationEngine.evaluate_suggestion(suggestion)
 
 ## Phase 5a — OAuth2 Foundation + Gmail
 
-**Статус:** Планирование  
+**Статус:** Завершено (v0.5.0)  
 **Цель:** Реальная интеграция с Gmail. OAuth2 infrastructure для всех будущих интеграций.  
 **Время:** 20 дней (10 naive × 2 buffer)  
 **Версия:** 0.5.0
@@ -329,7 +329,7 @@ DelegationEngine.evaluate_suggestion(suggestion)
 | `selfos gmail unread_count` | Возвращает реальное количество непрочитанных |
 | `selfos gmail list --unread` | Показывает до 10 писем с subject/sender/date |
 | OAuth flow | Работает в обычном терминале (browser) И headless (device flow) |
-| Тесты | 212+ существующих зелёные + ≥15 новых |
+| Тесты | 221+ существующих зелёные + ≥15 новых |
 
 ### Этапы
 
@@ -390,7 +390,7 @@ tests/
 ├── test_oauth_manager.py          # Unit: mock HTTP, token exchange/refresh
 ├── test_token_store.py            # Unit: mock keyring, encrypted fallback
 ├── test_rate_limiter.py           # Unit: persistent state, backoff
-├── test_gmail_plugin.py           # VCR: recorded Gmail API responses
+├── test_gmail_plugin_vcr.py       # VCR: recorded Gmail API responses
 ├── test_gmail_e2e.py              # E2E: OAuth → Gmail → suggestions
 └── cassettes/                     # VCR fixtures (recorded HTTP exchanges)
     ├── test_gmail_list.yaml
@@ -407,7 +407,7 @@ tests/
 
 ## Phase 5b — LLM-powered Suggestions
 
-**Статус:** Планирование (после Phase 5a)  
+**Статус:** Завершено (v0.6.0)  
 **Цель:** Интеллектуальные предложения на основе реальных данных Gmail + ContextEngine.  
 **Время:** 25 дней (14 naive × ~1.8 buffer)  
 **Версия:** 0.6.0

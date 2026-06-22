@@ -18,3 +18,12 @@ def test_prompt_manager_renders_context() -> None:
     )
     assert "hello" in rendered
     assert "USER_DATA_START" in rendered
+    assert "task_create" in rendered
+
+
+def test_prompt_manager_templates_define_data_wrappers() -> None:
+    manager = PromptManager()
+    for template_name in ("suggest_general", "suggest_email", "suggest_summary"):
+        rendered = manager.render(template_name, {"summary": "hello"})
+        assert "<USER_DATA_START>" in rendered
+        assert "<USER_DATA_END>" in rendered
