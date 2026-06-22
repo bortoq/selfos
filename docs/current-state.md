@@ -23,9 +23,9 @@
 
 | Метрика | Значение |
 |---------|---------|
-| Тесты | 115+ passed |
+| Тесты | 187 passed |
 | Ruff | 0 errors |
-| Mypy (src/selfos/) | 0 errors (23 files) |
+| Mypy (src/selfos/) | 0 errors (25 files) |
 | Покрытие | ~66% |
 | CI | Блокирует регрессии |
 
@@ -52,3 +52,11 @@
   - Механизм применения правил в DelegationEngine.should_auto_execute()
   - CLI: selfos delegate rule add / list / remove / info
   - Типы условий: always, never, trust_threshold, time_range
+- Phase 4 / Stage 3 (Plugin Marketplace):
+  - Marketplace Index (docs/plugin-marketplace.yaml + PluginMarketplace dataclass)
+  - Version comparison (compare_versions for semver)
+  - Plugin installation (selfos plugin install <name>)
+  - Plugin removal (selfos plugin remove <name>)
+  - Plugin update (selfos plugin update [name])
+  - Plugin search (selfos plugin search <query>)
+  - Robust list_with_metadata() for plugins without get_info

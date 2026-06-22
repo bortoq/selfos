@@ -126,9 +126,15 @@ class PluginRegistry:
                 })
             else:
                 # Built-in plugin без манифеста
-                instance = self.get(name)
-                info = instance.get_info()
-                result.append(info.to_dict())
+                try:
+                    instance = self.get(name)
+                    if hasattr(instance, 'get_info'):
+                        info = instance.get_info()
+                        result.append(info.to_dict())
+                    else:
+                        result.append({"name": name, "description": "", "version": "?"})
+                except Exception:
+                    result.append({"name": name, "description": "", "version": "?"})
         return result
 
     # --- Глобальный singleton ---

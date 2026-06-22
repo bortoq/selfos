@@ -285,6 +285,66 @@ def cmd_plugin(args: Any) -> None:
         PluginRegistry.install_global(manifest)
         print(f"Plugin '{name}' created and registered.")
 
+    elif args.action == "install":
+        from selfos.plugin_marketplace import install_plugin_from_marketplace
+        name = args.name
+        try:
+            dest = install_plugin_from_marketplace(name)
+            print(f"Plugin '{name}' installed in {dest}")
+        except ValueError as e:
+            print(f"[ERROR] {e}")
+            sys.exit(1)
+
+    elif args.action == "remove":
+        from selfos.plugin_marketplace import remove_plugin
+        name = args.name
+        if remove_plugin(name, cleanup_files=True):
+            print(f"Plugin '{name}' removed.")
+        else:
+            print(f"Plugin '{name}' not found.")
+
+    elif args.action == "update":
+        from selfos.plugin_marketplace import check_for_updates, update_plugin
+        if args.name:
+            name = args.name
+            try:
+                new_version = update_plugin(name)
+                print(f"Plugin '{name}' updated to v{new_version}")
+            except ValueError as e:
+                print(f"[ERROR] {e}")
+                sys.exit(1)
+        else:
+            updates = check_for_updates()
+            if not updates:
+                print("All plugins are up to date.")
+            else:
+                print("=== Available Updates ===")
+                for u in updates:
+                    print(f"  {u['name']}: v{u['current_version']} -> v{u['available_version']}")
+                    if u.get("description"):
+                        print(f"    {u['description']}")
+                    print()
+                print("Use 'selfos plugin update <name>' to update a specific plugin.")
+
+    elif args.action == "search":
+        from selfos.plugin_marketplace import load_marketplace
+        marketplace = load_marketplace()
+        results = marketplace.search(args.query, field=args.field)
+        if not results:
+            print(f"No plugins found matching '{args.query}'.")
+            return
+        print(f"=== Marketplace Results for '{args.query}' ===")
+        for p in results:
+            print(f"  {p.name} v{p.version}")
+            print(f"    Author: {p.author}")
+            print(f"    Description: {p.description}")
+            if p.protocol:
+                print(f"    Protocol: {p.protocol}")
+            if p.tags:
+                print(f"    Tags: {', '.join(p.tags)}")
+            print()
+        print("Use 'selfos plugin install <name>' to install a plugin.")
+
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -442,6 +502,25 @@ def build_parser() -> argparse.ArgumentParser:
     ], default="", help="Protocol to implement")
     plugin_create.add_argument("--path", "-p", help="Target directory")
     plugin_create.set_defaults(func=cmd_plugin)
+
+    plugin_install = plugin_sub.add_parser("install", help="Install a plugin from marketplace")
+    plugin_install.add_argument("name", help="Plugin name (from marketplace)")
+    plugin_install.set_defaults(func=cmd_plugin)
+
+    plugin_remove = plugin_sub.add_parser("remove", help="Remove an installed plugin")
+    plugin_remove.add_argument("name", help="Plugin name")
+    plugin_remove.set_defaults(func=cmd_plugin)
+
+    plugin_update = plugin_sub.add_parser("update", help="Check or apply plugin updates")
+    plugin_update.add_argument("name", nargs="?", default=None,
+                               help="Plugin name (omit to list all updates)")
+    plugin_update.set_defaults(func=cmd_plugin)
+
+    plugin_search = plugin_sub.add_parser("search", help="Search plugins in marketplace")
+    plugin_search.add_argument("query", help="Search query")
+    plugin_search.add_argument("--field", choices=["name", "description", "tags", "all"],
+                               default="all", help="Field to search in")
+    plugin_search.set_defaults(func=cmd_plugin)
 
     return parser
 

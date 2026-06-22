@@ -124,7 +124,7 @@ def scaffold_plugin(
         version="0.1.0",
         description=description or f"{name} plugin for Self OS",
         author=author or "Unknown",
-        entry_point=f"{safe_name}:{class_name}",
+        entry_point=f"{safe_name}.{safe_name}:{class_name}",
         protocol=protocol,
     )
     manifest_path = os.path.join(dest, "plugin.yaml")

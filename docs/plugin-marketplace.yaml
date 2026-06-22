@@ -1,0 +1,25 @@
+# Self OS Plugin Marketplace
+# Format version: 1.0
+# Add new plugins here to make them available via `selfos plugin install`
+
+version: "1.0"
+source: "local"
+
+plugins:
+  # Example plugin — can be installed for testing
+  - name: "example-greeter"
+    version: "0.1.0"
+    description: "Example plugin that greets the user"
+    author: "Self OS Team"
+    entry_point: "example_greeter:GreeterPlugin"
+    protocol: "NotingPlugin"
+    tags: ["example", "tutorial"]
+
+  # Quick Note — a simple noting plugin demo
+  - name: "hello-noter"
+    version: "1.0.0"
+    description: "A simple hello-world noting plugin"
+    author: "Community"
+    entry_point: "hello_noter:HelloNoterPlugin"
+    protocol: "NotingPlugin"
+    tags: ["note", "hello"]
