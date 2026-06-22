@@ -7,11 +7,12 @@ Activity Log — запись событий в Activity Log.
 
 import json
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-DATA_DIR = Path("data/activity")
+from selfos.config import data_dir
+
+DATA_DIR = data_dir()
 
 
 def create_task_event(

@@ -2,13 +2,14 @@
 UnifiedInterface — единый интерфейс Self OS (Phase 3, Этап 5).
 
 Объединяет:
-- CLI
+- CLI (основной пользователь)
 - Web (заготовка)
 - Voice / Chat (заготовка)
 
 Предоставляет единую точку входа для пользователя.
 """
 
+import argparse
 from collections.abc import Callable
 from typing import Any
 
@@ -26,7 +27,12 @@ class UnifiedInterface:
         self.handlers[action] = handler
 
     def execute(self, command: str, **kwargs: Any) -> dict[str, Any]:
-        """Выполняет команду через единый интерфейс"""
+        """Выполняет команду через единый интерфейс.
+
+        Обработчикам (cmd_*) передаётся argparse.Namespace,
+        собранный из **kwargs — это обеспечивает совместимость
+        как с CLI (через парсер), так и с будущими Web/Voice вызовами.
+        """
         if command not in self.handlers:
             return {
                 "success": False,
@@ -34,7 +40,9 @@ class UnifiedInterface:
             }
 
         try:
-            result = self.handlers[command](**kwargs)
+            handler = self.handlers[command]
+            args = argparse.Namespace(**kwargs)
+            result = handler(args)
             return {
                 "success": True,
                 "command": command,

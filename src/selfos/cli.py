@@ -223,12 +223,16 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> None:
+    from selfos.unified_interface import interface
     parser = build_parser()
     args = parser.parse_args(argv)
 
     if hasattr(args, "func"):
         try:
-            args.func(args)
+            # Через UnifiedInterface — единая точка входа
+            kwargs = {k: v for k, v in vars(args).items()
+                      if k not in ('func', 'command')}
+            interface.execute(args.command, **kwargs)
         except Exception as e:
             print(f"[ERROR] {e}")
             sys.exit(1)

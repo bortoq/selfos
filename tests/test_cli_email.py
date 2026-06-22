@@ -1,3 +1,5 @@
+"""CLI email command tests."""
+
 from selfos.cli import build_parser
 
 

@@ -17,8 +17,9 @@ class ContextEngine:
     Анализирует Activity Log и формирует контекстные инсайты.
     """
 
-    def __init__(self, data_dir: str = "data/activity") -> None:
-        self.data_dir = Path(data_dir)
+    def __init__(self, data_dir: str | None = None) -> None:
+        from selfos.config import data_dir as default_data_dir
+        self.data_dir = Path(data_dir or default_data_dir())
         self.events: list[dict[str, Any]] = []
         self._load_events()
 

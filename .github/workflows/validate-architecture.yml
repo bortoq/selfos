@@ -12,20 +12,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check required architecture components
-        run: |
-          echo "Checking EventFactory..."
-          test -f src/selfos/event_factory.py || exit 1
-          echo "Checking PluginRegistry..."
-          test -f src/selfos/plugin_registry.py || exit 1
-          echo "Checking BaseSelfOSPlugin..."
-          test -f src/selfos/base_selfos_plugin.py || exit 1
-          echo "All required components exist."
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: 'pip'
 
-      - name: Check that key scripts have been migrated to plugins
+      - name: Install dependencies
         run: |
-          echo "Checking that quick_note.py is migrated..."
-          if [ -f scripts/quick_note.py ]; then echo "ERROR: scripts/quick_note.py should be removed"; exit 1; fi
-          echo "Checking that categorize.py is migrated..."
-          if [ -f scripts/categorize.py ]; then echo "ERROR: scripts/categorize.py should be removed"; exit 1; fi
-          echo "All old scripts have been properly migrated."
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Validate Architecture Contract
+        run: PYTHONPATH=src:. python3 scripts/validate_architecture.py
