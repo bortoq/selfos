@@ -29,6 +29,13 @@ class DelegationEngine:
         "delete_data",     # Удаление данных
         "financial_transaction"
     }
+    LLM_TO_DELEGATION_MAP: dict[str, str | None] = {
+        "email_reply": "email_send",
+        "task_create": "quick_note",
+        "note": "quick_note",
+        "review_context": None,
+        "review_schedule": None,
+    }
 
     def __init__(self, rules_file: str | None = None) -> None:
         self.overrides: dict[str, bool] = {}  # Ручные переопределения
@@ -110,6 +117,20 @@ class DelegationEngine:
                 "reason": str(e),
                 "action": action_type
             }
+
+    def evaluate_suggestion(self, suggestion: dict[str, Any]) -> str:
+        """Решение по suggestion на основе action и confidence."""
+        action = str(suggestion.get("action", ""))
+        delegation_type = self.LLM_TO_DELEGATION_MAP.get(action)
+        if delegation_type is None:
+            return "display_only"
+
+        confidence = float(suggestion.get("confidence", 0.0))
+        if confidence < 0.75:
+            return "display_only"
+        if self.should_auto_execute(delegation_type):
+            return "auto_execute"
+        return "queue_for_approval"
 
     # ─── Управление переопределениями ──────────────────────────────────
 

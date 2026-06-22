@@ -67,11 +67,14 @@ def register_default_handlers() -> None:
     """Регистрирует базовые обработчики"""
     from selfos.cli import (
         cmd_browser,
+        cmd_config,
         cmd_context,
         cmd_delegate,
         cmd_email,
+        cmd_gmail,
         cmd_note,
         cmd_plugin,
+        cmd_profile,
         cmd_schedule,
         cmd_status,
         cmd_suggest,
@@ -86,6 +89,9 @@ def register_default_handlers() -> None:
     interface.register_handler("schedule", cmd_schedule)
     interface.register_handler("browser", cmd_browser)
     interface.register_handler("context", cmd_context)
+    interface.register_handler("config", cmd_config)
+    interface.register_handler("profile", cmd_profile)
+    interface.register_handler("gmail", cmd_gmail)
     interface.register_handler("delegate", cmd_delegate)
     interface.register_handler("plugin", cmd_plugin)
 

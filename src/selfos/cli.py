@@ -4,12 +4,17 @@ Self OS CLI - Phase 3
 """
 
 import argparse
+import dataclasses
 import json
+import os
+import subprocess
 import sys
+import tempfile
 from typing import Any
 
 from selfos.event_factory import EventFactory
 from selfos.hooks import get_hook_registry
+from selfos.llm.suggestion_engine import SuggestionEngine
 from selfos.plugin_registry import PluginRegistry
 
 
@@ -45,15 +50,36 @@ def cmd_status(args: Any) -> None:
 
 
 def cmd_suggest(args: Any) -> None:
-    hooks = get_hook_registry()
-    ctx = hooks.trigger_before("suggest:get")
-    plugin = PluginRegistry.get_plugin("smart_suggestions")
-    result = plugin.execute()
-    result = hooks.trigger_after("suggest:get", result=result, **ctx)
-    suggestions = result.get("suggestions", []) if isinstance(result, dict) else []
+    engine = _create_suggestion_engine()
+
+    if getattr(args, "approve", None):
+        result = engine.approve_suggestion(args.approve)
+        print(f"Approved suggestion: {result['suggestion_id']}")
+        return
+    if getattr(args, "rate", None):
+        suggestion_id, rating_raw = args.rate
+        engine.rate_suggestion(suggestion_id, int(rating_raw))
+        print(f"Rated suggestion {suggestion_id}: {rating_raw}")
+        return
+    if getattr(args, "stats", False):
+        print(json.dumps(engine.get_stats(), indent=2, ensure_ascii=False))
+        return
+    if getattr(args, "clear_cache", False):
+        engine.clear_cache()
+        print("LLM cache cleared.")
+        return
+
+    mode = "llm" if getattr(args, "llm", False) else "rules"
+    response = engine.get_suggestions(mode=mode, provider=getattr(args, "provider", None))
     print("=== Smart Suggestions ===")
-    for s in suggestions:
-        print(f"- {s}")
+    if response.get("backend_used") == "rules_fallback":
+        reason = response.get("fallback_reason", "unknown")
+        print(f"[fallback to rules] reason={reason}")
+    for suggestion in response.get("suggestions", []):
+        if isinstance(suggestion, dict):
+            print(f"- [{suggestion.get('id')}] {suggestion.get('summary')}")
+        else:
+            print(f"- {suggestion}")
 
 
 def cmd_email(args: Any) -> None:
@@ -156,6 +182,155 @@ def cmd_delegate(args: Any) -> None:
         print(f"{args.action_type}: {'AUTO' if allowed else 'REVIEW'}")
     elif args.action == "rule":
         _cmd_delegate_rule(engine, args)
+
+
+def _resolve_google_credentials() -> tuple[str, str]:
+    client_id = os.getenv("GOOGLE_CLIENT_ID", "")
+    client_secret = os.getenv("GOOGLE_CLIENT_SECRET", "")
+    if not client_id or not client_secret:
+        raise ValueError(
+            "Missing Google OAuth credentials. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET."
+        )
+    return client_id, client_secret
+
+
+def _create_oauth_manager(provider: str, profile: str | None = None) -> Any:
+    from selfos.config import current_profile
+    from selfos.integrations.oauth_manager import OAuthManager, _get_provider_configs
+    from selfos.integrations.token_store import SecureTokenStore
+
+    provider_configs = _get_provider_configs()
+    if provider not in provider_configs:
+        raise ValueError(f"Unknown OAuth provider: {provider}")
+
+    base_config = provider_configs[provider]
+    if provider in {"gmail", "calendar"}:
+        client_id, client_secret = _resolve_google_credentials()
+    else:
+        env_prefix = provider.upper()
+        client_id = os.getenv(f"{env_prefix}_CLIENT_ID", "")
+        client_secret = os.getenv(f"{env_prefix}_CLIENT_SECRET", "")
+        if not client_id or not client_secret:
+            raise ValueError(
+                f"Missing OAuth credentials for {provider}. "
+                f"Set {env_prefix}_CLIENT_ID and {env_prefix}_CLIENT_SECRET."
+            )
+
+    config = dataclasses.replace(
+        base_config,
+        client_id=client_id,
+        client_secret=client_secret,
+        scopes=list(base_config.scopes),
+        extra_auth_params=dict(base_config.extra_auth_params),
+        extra_token_params=dict(base_config.extra_token_params),
+    )
+    store = SecureTokenStore(profile=profile or current_profile())
+    return OAuthManager(provider, config, store)
+
+
+def _create_gmail_plugin(profile: str | None = None) -> Any:
+    from selfos.plugins.gmail_plugin import GmailPlugin
+
+    return GmailPlugin(_create_oauth_manager("gmail", profile=profile))
+
+
+def _create_suggestion_engine() -> SuggestionEngine:
+    return SuggestionEngine()
+
+
+def _edit_text_in_editor(initial_text: str = "") -> str:
+    editor = os.getenv("EDITOR")
+    if not editor:
+        raise ValueError("No message body provided and EDITOR is not set")
+
+    with tempfile.NamedTemporaryFile(mode="w+", suffix=".txt", delete=False) as handle:
+        handle.write(initial_text)
+        handle.flush()
+        temp_path = handle.name
+
+    try:
+        subprocess.run([editor, temp_path], check=True)
+        with open(temp_path, encoding="utf-8") as handle:
+            return handle.read().strip()
+    finally:
+        try:
+            os.unlink(temp_path)
+        except OSError:
+            pass
+
+
+def cmd_profile(args: Any) -> None:
+    from selfos.config import create_profile, current_profile, list_profiles, set_current_profile
+
+    if args.action == "create":
+        path = create_profile(args.name)
+        print(f"Profile created: {args.name} ({path})")
+    elif args.action == "switch":
+        selected = set_current_profile(args.name)
+        print(f"Current profile: {selected}")
+    elif args.action == "current":
+        print(current_profile())
+    elif args.action == "list":
+        profiles = list_profiles()
+        if not profiles:
+            print("(no profiles)")
+            return
+        for profile in profiles:
+            print(profile)
+
+
+def cmd_config(args: Any) -> None:
+    from selfos.config import llm_config, update_llm_config
+
+    if args.topic != "llm":
+        raise ValueError("Only 'llm' config is supported")
+
+    if not any([args.provider, args.model, args.api_key, args.cloud_opt_in]):
+        print(json.dumps(llm_config(), indent=2, ensure_ascii=False))
+        return
+
+    updates: dict[str, Any] = {}
+    if args.provider:
+        updates["provider"] = args.provider
+    if args.model:
+        updates["model"] = args.model
+    if args.api_key:
+        updates["api_key"] = args.api_key
+    if args.cloud_opt_in:
+        updates["cloud_opt_in"] = True
+    print(json.dumps(update_llm_config(updates), indent=2, ensure_ascii=False))
+
+
+def cmd_gmail(args: Any) -> None:
+    plugin = _create_gmail_plugin()
+
+    if args.subcommand == "list":
+        messages = plugin.list_messages(
+            max_results=args.max_results,
+            unread_only=args.unread,
+        )
+        for message in messages:
+            print(f"{message['subject']} | {message['from']} | {message['date']}")
+    elif args.subcommand == "read":
+        message = plugin.read_message(args.message_id)
+        print(f"Subject: {message['subject']}")
+        print(f"From: {message['from']}")
+        print(f"Date: {message['date']}")
+        print()
+        print(message["body"] or message["snippet"])
+    elif args.subcommand == "send":
+        body = args.body if args.body is not None else _edit_text_in_editor()
+        result = plugin.send_message(to=args.to, subject=args.subject, body=body)
+        print(f"Sent Gmail message: {result.get('id', '?')}")
+    elif args.subcommand == "search":
+        messages = plugin.search_messages(args.query, max_results=args.max_results)
+        for message in messages:
+            print(f"{message['subject']} | {message['from']} | {message['date']}")
+    elif args.subcommand == "unread_count":
+        print(plugin.unread_count())
+    elif args.subcommand == "labels":
+        for label in plugin.list_labels():
+            print(label)
 
 
 
@@ -370,6 +545,20 @@ def cmd_plugin(args: Any) -> None:
             print()
         print("Use 'selfos plugin install <name>' to install a plugin.")
 
+    elif args.action == "setup":
+        if args.name != "gmail":
+            raise ValueError("Only 'gmail' setup is supported in Phase 5a")
+        manager = _create_oauth_manager(args.name)
+        if args.test:
+            ok = manager.test_connection()
+            print(f"{args.name} connection: {'OK' if ok else 'FAILED'}")
+        elif args.headless:
+            manager.start_device_flow()
+            print(f"{args.name} OAuth setup completed via device flow")
+        else:
+            manager.start_browser_flow()
+            print(f"{args.name} OAuth setup completed via browser flow")
+
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -395,6 +584,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     # suggest
     suggest = subparsers.add_parser("suggest", help="Get suggestions")
+    suggest.add_argument("--llm", action="store_true")
+    suggest.add_argument("--provider", choices=["ollama", "openai", "anthropic"])
+    suggest.add_argument("--approve")
+    suggest.add_argument("--rate", nargs=2, metavar=("ID", "RATING"))
+    suggest.add_argument("--stats", action="store_true")
+    suggest.add_argument("--clear-cache", action="store_true")
     suggest.set_defaults(func=cmd_suggest)
 
     # email
@@ -448,6 +643,54 @@ def build_parser() -> argparse.ArgumentParser:
     context_patterns.set_defaults(func=cmd_context)
     context_suggest = context_sub.add_parser("suggest", help="Get proactive suggestions")
     context_suggest.set_defaults(func=cmd_context)
+
+    # config
+    config = subparsers.add_parser("config", help="Manage configuration")
+    config_sub = config.add_subparsers(dest="topic", required=True)
+    config_llm = config_sub.add_parser("llm", help="Manage LLM configuration")
+    config_llm.add_argument("--provider", choices=["ollama", "openai", "anthropic"])
+    config_llm.add_argument("--model")
+    config_llm.add_argument("--api-key")
+    config_llm.add_argument("--cloud-opt-in", action="store_true")
+    config_llm.set_defaults(func=cmd_config)
+
+    # profile
+    profile = subparsers.add_parser("profile", help="Manage runtime profiles")
+    profile_sub = profile.add_subparsers(dest="action", required=True)
+    profile_create = profile_sub.add_parser("create", help="Create a profile")
+    profile_create.add_argument("name")
+    profile_create.set_defaults(func=cmd_profile)
+    profile_switch = profile_sub.add_parser("switch", help="Switch active profile")
+    profile_switch.add_argument("name")
+    profile_switch.set_defaults(func=cmd_profile)
+    profile_current = profile_sub.add_parser("current", help="Show active profile")
+    profile_current.set_defaults(func=cmd_profile)
+    profile_list = profile_sub.add_parser("list", help="List profiles")
+    profile_list.set_defaults(func=cmd_profile)
+
+    # gmail
+    gmail = subparsers.add_parser("gmail", help="Gmail integration")
+    gmail_sub = gmail.add_subparsers(dest="subcommand", required=True)
+    gmail_list = gmail_sub.add_parser("list", help="List messages")
+    gmail_list.add_argument("--unread", action="store_true")
+    gmail_list.add_argument("--max-results", dest="max_results", type=int, default=10)
+    gmail_list.set_defaults(func=cmd_gmail)
+    gmail_read = gmail_sub.add_parser("read", help="Read a message")
+    gmail_read.add_argument("message_id")
+    gmail_read.set_defaults(func=cmd_gmail)
+    gmail_send = gmail_sub.add_parser("send", help="Send a message")
+    gmail_send.add_argument("--to", required=True)
+    gmail_send.add_argument("--subject", required=True)
+    gmail_send.add_argument("--body")
+    gmail_send.set_defaults(func=cmd_gmail)
+    gmail_search = gmail_sub.add_parser("search", help="Search messages")
+    gmail_search.add_argument("query")
+    gmail_search.add_argument("--max-results", dest="max_results", type=int, default=10)
+    gmail_search.set_defaults(func=cmd_gmail)
+    gmail_unread = gmail_sub.add_parser("unread_count", help="Count unread messages")
+    gmail_unread.set_defaults(func=cmd_gmail)
+    gmail_labels = gmail_sub.add_parser("labels", help="List labels")
+    gmail_labels.set_defaults(func=cmd_gmail)
 
     # delegate
     delegate = subparsers.add_parser("delegate", help="Manage delegation")
@@ -546,6 +789,12 @@ def build_parser() -> argparse.ArgumentParser:
     plugin_search.add_argument("--field", choices=["name", "description", "tags", "all"],
                                default="all", help="Field to search in")
     plugin_search.set_defaults(func=cmd_plugin)
+
+    plugin_setup = plugin_sub.add_parser("setup", help="Run OAuth setup for an integration")
+    plugin_setup.add_argument("name", help="Integration name")
+    plugin_setup.add_argument("--headless", action="store_true")
+    plugin_setup.add_argument("--test", action="store_true")
+    plugin_setup.set_defaults(func=cmd_plugin)
 
     return parser
 

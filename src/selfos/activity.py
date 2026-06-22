@@ -12,8 +12,6 @@ from uuid import uuid4
 
 from selfos.config import data_dir
 
-DATA_DIR = data_dir()
-
 
 def create_task_event(
     title: str, project: str = "Self OS", priority: int = 2
@@ -39,7 +37,7 @@ def create_task_event(
 def save_event(event: dict[str, Any]) -> None:
     """Save event to today's Activity Log"""
     date = event["timestamp"][:10]
-    file_path = DATA_DIR / f"{date}.json"
+    file_path = data_dir() / f"{date}.json"
 
     events: list[dict[str, Any]] = []
     if file_path.exists():
