@@ -9,6 +9,8 @@ End-to-end тест Phase 4.
 import sys
 from pathlib import Path
 
+import pytest
+
 from selfos.base_selfos_plugin import BaseSelfOSPlugin
 from selfos.hooks import (
     HOOK_NOTE_CREATE,
@@ -32,7 +34,7 @@ from selfos.plugin_sdk import scaffold_plugin, validate_plugin
 class TestPhase4E2E:
     """Сквозной тест всех возможностей Phase 4."""
 
-    def test_full_plugin_lifecycle(self, tmp_path: Path) -> None:
+    def test_full_plugin_lifecycle(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """
         1. Создать плагин через scaffold
         2. Проверить manifest
@@ -44,12 +46,17 @@ class TestPhase4E2E:
         """
         reset_hook_registry()
         import selfos.config as _config
-        _orig_plugins_dir = _config.plugins_dir
-        _config.plugins_dir = lambda: tmp_path / "plugins"
         plugins_root = tmp_path / "plugins"
         plugins_root.mkdir(parents=True, exist_ok=True)
-        if str(plugins_root) not in sys.path:
-            sys.path.insert(0, str(plugins_root))
+        monkeypatch.setattr(_config, "plugins_dir", lambda: plugins_root)
+        monkeypatch.syspath_prepend(str(plugins_root))
+        # Изоляция: очищаем кеш импорта от предыдущих тестов
+        for mod in list(sys.modules):
+            if mod in ("mp_installed", "mp_installed.mp_installed",
+                       "e2e_test_plugin", "e2e_test_plugin.e2e_test_plugin",
+                       "first_plugin", "first_plugin.first_plugin",
+                       "test_plugin", "test_plugin.test_plugin"):
+                sys.modules.pop(mod, None)
 
         # 1. Scaffold
         name = "e2e-test-plugin"
@@ -111,12 +118,13 @@ class TestPhase4E2E:
         assert updated_manifest is not None
         assert updated_manifest.version == "2.0.0"
 
-        # 7. Удаление
+        # 7. Удаление + очистка sys.modules для изоляции
         removed = remove_plugin("mp-installed", cleanup_files=True)
         assert removed is True
         assert "mp-installed" not in PluginRegistry.list_plugins()
-        # restore
-        _config.plugins_dir = _orig_plugins_dir
+        for mod_name in ["mp_installed", "mp_installed.mp_installed",
+                         "e2e_test_plugin", "e2e_test_plugin.e2e_test_plugin"]:
+            sys.modules.pop(mod_name, None)
 
     def test_hooks_integration(self, tmp_path: Path) -> None:
         """

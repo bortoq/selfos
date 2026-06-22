@@ -79,6 +79,12 @@ class PluginRegistry:
         # Динамический импорт: "my_plugin:MyPlugin"
         module_path, class_name = manifest.entry_point.split(":", 1)
         import importlib
+        import sys as _sys
+        # Clear stale caches: sys.modules + path importer cache
+        for _k in list(_sys.modules):
+            if _k == module_path or _k == module_path.split(".")[0]:
+                _sys.modules.pop(_k, None)
+        importlib.invalidate_caches()
         module = importlib.import_module(module_path)
         plugin_class = getattr(module, class_name)
         if not isinstance(plugin_class, type):

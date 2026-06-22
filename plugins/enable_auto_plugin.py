@@ -30,6 +30,8 @@ class EnableAutoPlugin(BaseSelfOSPlugin):
 
     def execute(self, **kwargs: Any) -> dict[str, Any]:
         action = kwargs.get('action', '')
+        if not action:
+            raise ValueError("action is required — cannot enable/disable empty action")
         enable = kwargs.get('enable', True)
         status = "enabled" if enable else "disabled"
 

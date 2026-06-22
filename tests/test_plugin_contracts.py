@@ -124,7 +124,7 @@ def _default_kwargs(plugin_name: str) -> dict:
         "smart_suggestions": {},
         "tag_suggestion": {},
         "weekly_report": {"events": []},
-        "enable_auto": {},
+        "enable_auto": {"action": "test"},
         "show_auto_status": {},
         "update_dashboard": {"events": []},
     }

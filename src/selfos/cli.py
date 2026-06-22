@@ -40,7 +40,7 @@ def cmd_task(args: Any) -> None:
 
 def cmd_status(args: Any) -> None:
     print("=== Self OS Status ===")
-    print("Phase: 3 - Full Immersion")
+    print("Phase: 4 - Platform")
     print("Status: Active")
 
 

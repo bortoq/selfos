@@ -16,10 +16,14 @@ from typing import Any
 
 import yaml
 
-from selfos.config import plugins_dir as get_plugins_dir
+import selfos.config as _selfos_config
 from selfos.plugin_manifest import PluginManifest
 from selfos.plugin_sdk import scaffold_plugin
 
+
+def plugins_dir() -> Path:
+    """Runtime-resolution wrapper to support monkeypatch in tests."""
+    return _selfos_config.plugins_dir()
 # ─── Data models ──────────────────────────────────────────────────────
 
 MARKETPLACE_FILENAME = "plugin-marketplace.yaml"
@@ -290,7 +294,7 @@ def install_plugin_from_marketplace(
 
     # Определяем целевую директорию
     if dest_dir is None:
-        dest_dir = str(get_plugins_dir() / name.replace("-", "_"))
+        dest_dir = str(plugins_dir() / name.replace("-", "_"))
 
     # Создаём файлы плагина
     scaffold_plugin(
@@ -311,7 +315,7 @@ def install_plugin_from_marketplace(
 
     # Добавляем в sys.path
     import sys
-    plugins_root = str(get_plugins_dir())
+    plugins_root = str(plugins_dir())
     if plugins_root not in sys.path:
         sys.path.insert(0, plugins_root)
 
@@ -352,7 +356,7 @@ def remove_plugin(name: str, *, cleanup_files: bool = True) -> bool:
     if cleanup_files and manifest:
         # Ищем директорию плагина
         # Сначала ищем в ~/.selfos/plugins/<name>/
-        plugin_dir = get_plugins_dir() / name.replace("-", "_")
+        plugin_dir = plugins_dir() / name.replace("-", "_")
         if plugin_dir.exists():
             import shutil
             shutil.rmtree(plugin_dir)
@@ -412,7 +416,6 @@ def install_plugin_from_url(url: str, *, dest_dir: str | None = None) -> str:
     """
     import os
 
-    from selfos.config import plugins_dir as get_plugins_dir
     from selfos.plugin_manifest import PluginManifest
     from selfos.plugin_registry import PluginRegistry
 
@@ -423,11 +426,20 @@ def install_plugin_from_url(url: str, *, dest_dir: str | None = None) -> str:
 
     safe_name = repo_name.replace("-", "_").lower()
     if dest_dir is None:
-        dest_dir = str(get_plugins_dir() / safe_name)
+        dest_dir = str(plugins_dir() / safe_name)
 
     # Проверяем, установлен ли уже
     if repo_name in PluginRegistry.list_plugins():
         raise ValueError(f"Plugin '{repo_name}' is already installed.")
+
+    # Безопасность: предупреждаем пользователя о коде из внешнего источника
+    import warnings
+    warnings.warn(
+        f"Installing plugin from {url} — this will execute arbitrary code "
+        f"from an external source. Only proceed if you trust the repository.",
+        UserWarning,
+        stacklevel=2,
+    )
 
     # Пытаемся клонировать через git
     import subprocess
@@ -455,7 +467,7 @@ def install_plugin_from_url(url: str, *, dest_dir: str | None = None) -> str:
 
     # Добавляем в sys.path
     import sys
-    plugins_root = str(get_plugins_dir())
+    plugins_root = str(plugins_dir())
     if plugins_root not in sys.path:
         sys.path.insert(0, plugins_root)
 
@@ -503,7 +515,7 @@ def update_plugin(
     manifest.description = plugin_info.description
 
     # Сохраняем обновлённый manifest в файл (если есть)
-    plugin_dir = get_plugins_dir() / name.replace("-", "_")
+    plugin_dir = plugins_dir() / name.replace("-", "_")
     manifest_path = plugin_dir / "plugin.yaml"
     if manifest_path.exists():
         manifest_path.write_text(manifest.to_yaml(), encoding="utf-8")

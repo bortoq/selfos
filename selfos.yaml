@@ -2,11 +2,10 @@ delegation_defaults:
   log_import: auto
 description: Personal activity log and delegation system
 force_review:
-  ? ''
-  : false
   daily_summary: false
   event_categorization: false
   tag_suggestion: false
+  test: false
 modules:
 - activity_log
 - delegation_engine
