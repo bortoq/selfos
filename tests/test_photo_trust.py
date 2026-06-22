@@ -1,8 +1,8 @@
 """Tests for photo classification trust integration."""
 
 from scripts.photo_trust import classify_and_trust
+from selfos import trust as trust_module
 from selfos.trust import increase_trust, reset_trust
-from src.selfos import trust as trust_module
 
 
 def test_classify_and_trust_review_mode(monkeypatch, tmp_path):

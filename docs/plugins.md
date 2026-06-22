@@ -3,18 +3,18 @@
 ## Overview
 
 Self OS supports external integrations through a plugin system.
-All plugins inherit from `BasePlugin` and implement the `execute()` method.
+All plugins inherit from `BaseSelfOSPlugin` and implement the `execute()` method.
 
-Plugins are registered in `src/selfos/plugin_registry.py` via `@PluginRegistry.register()`.
+Plugins live in `plugins/` and are registered in `src/selfos/plugin_registry.py`.
 
 ## Available Built-in Plugins
 
-### 1. Quick Note Plugin (`src/selfos/plugins/quick_note_plugin.py`)
+### 1. Quick Note Plugin (`plugins/quick_note_plugin.py`)
 - **Purpose**: Create quick notes with smart tag suggestions
 - **Method**: `execute(text: str)`
 - **Returns**: suggested tags + category
 
-### 2. Smart Suggestions Plugin (`src/selfos/plugins/smart_suggestions_plugin.py`)
+### 2. Smart Suggestions Plugin (`plugins/smart_suggestions_plugin.py`)
 - **Purpose**: Generate proactive suggestions based on context
 - **Method**: `execute()`
 - **Returns**: list of action suggestions
@@ -25,10 +25,10 @@ Plugins are registered in `src/selfos/plugin_registry.py` via `@PluginRegistry.r
 
 ## How to Add a New Plugin
 
-1. Create a new file in `src/selfos/plugins/`
-2. Inherit from `BasePlugin`
+1. Create a new file in `plugins/`
+2. Inherit from `BaseSelfOSPlugin`
 3. Implement `execute()` method
-4. Decorate with `@PluginRegistry.register("plugin_name")`
+4. Register in `src/selfos/plugin_registry.py` via `PluginRegistry.register("name", PluginClass)`
 5. Optionally add CLI integration in `src/selfos/cli.py`
 
 ## Trust Integration
@@ -51,7 +51,7 @@ trust_thresholds:
 ## Plugin Registry
 
 ```python
-from src.selfos.plugin_registry import PluginRegistry
+from selfos.plugin_registry import PluginRegistry
 
 # Get a plugin
 plugin = PluginRegistry.get_plugin("quick_note")

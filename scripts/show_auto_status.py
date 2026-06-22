@@ -1,37 +1,17 @@
 #!/usr/bin/env python3
 """
-Shows which actions are currently in auto mode.
+Show auto status — CLI entry point.
+
+Uses show_auto_status plugin via PluginRegistry.
 """
 
-from pathlib import Path
-
-import yaml
-
-from scripts.trust_manager import can_auto, get_threshold, load_trust
-
-CONFIG_FILE = Path("selfos.yaml")
-
-
-def load_config():
-    if CONFIG_FILE.exists():
-        with open(CONFIG_FILE) as f:
-            return yaml.safe_load(f)
-    return {}
+from selfos.plugin_registry import PluginRegistry
 
 
 def main():
-    trust = load_trust()
-    actions = ["event_categorization", "daily_summary", "tag_suggestion"]
-
-    print("=== Auto Mode Status ===\n")
-    
-    for action in actions:
-        threshold = get_threshold(action)
-        current = trust.get(action, 0)
-        auto_enabled = can_auto(action)
-        
-        status = "AUTO" if auto_enabled else "REVIEW"
-        print(f"{action:25} | {status:6} | {current}/{threshold}")
+    plugin = PluginRegistry.get_plugin("show_auto_status")
+    result = plugin.execute()
+    print(result)
 
 
 if __name__ == "__main__":

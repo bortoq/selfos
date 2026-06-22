@@ -4,17 +4,20 @@
 
 ```bash
 # Из корня проекта
-PYTHONPATH=/home/user/work/selfos python3 -m pytest tests/ -v
+pip install -e ".[dev]"
+pytest
 
 # С coverage
-PYTHONPATH=/home/user/work/selfos python3 -m pytest tests/ --cov=src/selfos
+pytest --cov=src/selfos
 
 # Только smoke-тесты CLI
-PYTHONPATH=/home/user/work/selfos python3 -m pytest tests/test_cli_smoke.py -v
+pytest tests/test_cli_smoke.py -v
 
 # Только trust manager
-PYTHONPATH=/home/user/work/selfos python3 -m pytest tests/test_trust_manager.py -v
+pytest tests/test_trust_manager.py -v
 ```
+
+> Примечание: после `pip install -e .` тесты работают без `PYTHONPATH`.
 
 ## Структура тестов
 
@@ -61,4 +64,4 @@ PYTHONPATH=/home/user/work/selfos python3 -m pytest tests/test_trust_manager.py 
 - GitHub Actions (`.github/workflows/ci.yml`)
 - `pytest` — обязателен (без `|| true`)
 - `ruff` — проверка линтинга (0 errors)
-- `mypy` — проверка типов (опционально)
+- `mypy` — проверка типов (0 errors, strict mode)

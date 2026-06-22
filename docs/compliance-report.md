@@ -1,4 +1,4 @@
-# Final Compliance Report — Phase 3 Complete
+# Compliance Report — Phase 3 Complete
 
 **Дата:** 2026-06-22  
 **Статус:** Phase 3 завершена. Все P0/P1 задачи аудита выполнены.
@@ -14,21 +14,25 @@
 | 5    | Единый интерфейс                 | Завершён   |
 | 6    | Стабилизация и документация      | Завершён   |
 
-## Итоговая оценка
+## Итоговая оценка (внешний аудит)
 
 | Критерий                          | Оценка |
 |-----------------------------------|--------|
-| Соответствие документации         | 9.3    |
-| Архитектурная целостность         | 9.1    |
-| Стабильность кода                 | 8.8    |
-| Готовность к использованию        | 9.0    |
-
-**Общая оценка Phase 3:** **9.0 / 10**
+| README / маркетинг                | 7/10   |
+| Архитектурная документация        | 8/10   |
+| Соответствие документации коду     | 7/10   |
+| Качество кода (стиль/типизация)   | 8/10   |
+| Архитектурная чистота             | 7/10   |
+| Тесты (полнота)                   | 7/10   |
+| Тесты (качество)                  | 6.5/10 |
+| CI / DevEx                        | 8/10   |
+| Готовность к использованию        | 8/10   |
+| **Итого**                         | **7.3/10** |
 
 ## Результаты аудита
 
 ### P0 — Исправлены
-- CLI dispatch исправлен (прямой вызов `args.func(args)` вместо `UnifiedInterface.execute`)
+- CLI dispatch исправлен (прямой вызов `args.func(args)`)
 - Мёртвый код `src/selfos/email.py` удалён
 - Сломанный workflow `categorize-events.yml` удалён
 
@@ -37,20 +41,22 @@
 - Business logic из `scripts/` перенесена в `src/selfos/`:
   - `scripts/trust_manager_v2.py` → `src/selfos/trust.py`
   - `scripts/create_task.py` → `src/selfos/activity.py`
-- `scripts/__init__.py` добавлен для namespace package resolution
 - `[project.scripts]` entry point `selfos = "selfos.cli:main"` добавлен
 - CI blocks on pytest failure (удалён `|| true`)
-- Ruff 0 errors (256 auto-fix + 23 manual)
+- Ruff 0 errors
 - Версия унифицирована: `0.3.0`
+- `scripts/auto_categorize.py`, `scripts/show_auto_status.py` — починены
 
 ### P2 — Исправлены
 - EventFactory id: timestamp → UUID v4 (нет коллизий)
 - Trust manager tests: используют `tmp_path` + `monkeypatch` (не пишут в `data/`)
 - CLI smoke test: 7 тестов для основных команд
-- Docs обновлены: TESTING.md, activity-schema.md, plugins.md
+- EmailService использует `EventFactory.create_email_event` (вместо ручного создания)
+- Docs обновлены: TESTING.md, activity-schema.md, plugins.md, current-state.md
 
-### P3 — В процессе
-- mypy: 109 ошибок (не критично, `|| true` в CI)
+### P3 — Исправлены
+- Mypy: 0 errors в `src/selfos/` (strict mode)
+- `|| true` убран из CI для mypy
 
 ## Документация
 
@@ -60,5 +66,6 @@
 - `docs/TESTING.md`
 - `docs/activity-schema.md`
 - `docs/plugins.md`
+- `docs/current-state.md`
 
-Phase 3 успешно завершена. Аудит пройден.
+Phase 3 успешно завершена. Аудит пройден (7.3/10).

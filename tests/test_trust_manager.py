@@ -1,12 +1,12 @@
 """Tests for trust manager with isolated tmp_path."""
 
+from selfos import trust as trust_module
 from selfos.trust import (
     can_auto,
     get_threshold,
     increase_trust,
     reset_trust,
 )
-from src.selfos import trust as trust_module
 
 
 def test_default_thresholds():

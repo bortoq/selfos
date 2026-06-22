@@ -34,7 +34,7 @@ jobs:
         run: cd src && mypy selfos/
 
       - name: Run tests
-        run: PYTHONPATH=src:. pytest tests/ -q --tb=no
+        run: pytest tests/ -q --tb=no
 
       - name: Validate Architecture Contract
         run: |

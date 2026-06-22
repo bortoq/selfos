@@ -1,38 +1,36 @@
-# Current State of Self OS (as of 2026-06-22)
+# Current State — Phase 3 Complete (6/6)
 
-## Соответствие документации
+**Дата:** 2026-06-22
 
-### phase0.md — Завершён
-- Activity Log + Delegation Engine: Реализовано
-- Check-in / Check-out: Не реализовано (по решению команды)
-- Простой дневник: Реализован через `quick_note_plugin`
-- Event Categorization: Реализован через `categorize_plugin`
+## Статус проекта
 
-### phase1.md — Завершён
-- Trust thresholds: Реализовано (`selfos.yaml`)
-- Auto mode: Реализовано (`EmailService`, `trust_manager_v2`)
-- Weekly Report: Реализовано
-- Multiple action types: Реализовано (email, note, task, photo, etc.)
+| Компонент | Статус |
+|-----------|--------|
+| CLI (`selfos status / note / task / ...`) | ✅ Работает |
+| EventFactory (UUID v4, tz-aware) | ✅ Работает |
+| PluginRegistry + все плагины | ✅ Работает |
+| Trust Manager (доверие + auto-режим) | ✅ Работает |
+| Email Service (делегирование) | ✅ Работает |
+| Context Engine | ✅ Работает |
+| Scheduler | ✅ Работает |
+| Browser Service | ✅ Работает |
+| Delegation Engine | ✅ Работает |
+| UnifiedInterface (заготовка под Web/Voice) | ⏸ Зарезервирован |
+| Web Interface | ⏸ Заглушка |
 
-### phase2.md — Завершён
-- Email integration: Реализовано (`EmailService` + `SMTPProvider`)
-- Scheduler: Реализовано (`src/selfos/scheduler.py`)
-- BrowserService: Реализовано
-- Плагины: Реализовано (`PluginRegistry` + 7 плагинов)
+## Метрики качества
 
-### phase3.md — Этап 3 завершён
-- Context Engine: Реализовано
-- Proactive suggestions: Реализовано
-- CLI как единый интерфейс: Реализовано
+| Метрика | Значение |
+|---------|---------|
+| Тесты | 79 passed |
+| Ruff | 0 errors |
+| Mypy (src/selfos/) | 0 errors |
+| Покрытие | 64% |
+| CI | Блокирует регрессии |
 
-## Архитектурное соответствие
+## Что сделано
 
-- `EventFactory`: Создан и используется
-- `PluginRegistry`: Создан и используется
-- `BaseSelfOSPlugin`: Создан
-- Все основные скрипты переведены в плагины
-- CLI полностью переписан под новую архитектуру
-
-## Статус
-
-Проект приведён в **высокое соответствие** с документацией (phase0–phase3).
+- P0: CLI, мёртвый код, workflows — исправлено
+- P1: Бизнес-логика из scripts/ → src/selfos/, print → logging, ruff
+- P2: UUID v4, изоляция тестов, smoke-тесты CLI
+- P3: Mypy strict 0 errors, docs обновлены
