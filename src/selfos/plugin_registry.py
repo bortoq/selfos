@@ -34,6 +34,13 @@ class PluginRegistry:
         if name in self._plugins:
             raise ValueError(f"Plugin '{name}' is already registered")
         self._plugins[name] = plugin_class
+        # Вызываем on_register, если метод определён
+        if hasattr(plugin_class, 'on_register'):
+            from selfos.hooks import get_hook_registry
+            try:
+                plugin_class.on_register(get_hook_registry())
+            except Exception:
+                pass
 
     def get(self, name: str, config: dict[str, Any] | None = None) -> Any:
         """Получить экземпляр плагина (с кэшированием)."""

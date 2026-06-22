@@ -23,9 +23,9 @@
 
 | Метрика | Значение |
 |---------|---------|
-| Тесты | 187 passed |
+| Тесты | 207 passed |
 | Ruff | 0 errors |
-| Mypy (src/selfos/) | 0 errors (25 files) |
+| Mypy (src/selfos/) | 0 errors (26 files) |
 | Покрытие | ~66% |
 | CI | Блокирует регрессии |
 
@@ -60,3 +60,11 @@
   - Plugin update (selfos plugin update [name])
   - Plugin search (selfos plugin search <query>)
   - Robust list_with_metadata() for plugins without get_info
+- Phase 4 / Stage 4 (Platform Extension):
+  - Hooks system (src/selfos/hooks.py): before/after/instead, 12 hook points
+  - CLI integration: hooks triggered in note/task/suggest commands
+  - BaseSelfOSPlugin.on_register() for auto-subscribing plugins
+  - PluginRegistry.register() calls on_register()
+  - Community Plugins: install from Git URL (selfos plugin install <url>)
+  - Rating + downloads fields in MarketplacePlugin
+  - Developer documentation: docs/plugin-development.md

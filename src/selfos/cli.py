@@ -9,23 +9,33 @@ import sys
 from typing import Any
 
 from selfos.event_factory import EventFactory
+from selfos.hooks import get_hook_registry
 from selfos.plugin_registry import PluginRegistry
 
 
 def cmd_note(args: Any) -> None:
+    hooks = get_hook_registry()
+    ctx = hooks.trigger_before("note:create", text=" ".join(args.text))
     plugin = PluginRegistry.get_plugin("quick_note")
-    result = plugin.execute(text=" ".join(args.text))
-    print(f"Note saved with tags: {', '.join(result['suggestions']['suggested_tags'])}")
+    result = plugin.execute(text=ctx.get("text", ""))
+    result = hooks.trigger_after("note:create", result=result, **ctx)
+    tags = result.get("suggestions", {}).get("suggested_tags", [])
+    print(f"Note saved with tags: {', '.join(tags)}")
 
 
 def cmd_task(args: Any) -> None:
-    title = " ".join(args.text)
+    hooks = get_hook_registry()
+    ctx = hooks.trigger_before("task:create", title=" ".join(args.text),
+                                project=args.project or "Self OS",
+                                priority=args.priority or 2)
     EventFactory.create_task_event(
-        title,
-        project=args.project or "Self OS",
-        priority=args.priority or 2
+        ctx.get("title", ""),
+        project=ctx.get("project", "Self OS"),
+        priority=ctx.get("priority", 2)
     )
-    print(f"Task created: {title}")
+    result = {"title": ctx.get("title", "")}
+    result = hooks.trigger_after("task:create", result=result, **ctx)
+    print(f"Task created: {result.get('title', ctx.get('title', ''))}")
 
 
 def cmd_status(args: Any) -> None:
@@ -35,10 +45,14 @@ def cmd_status(args: Any) -> None:
 
 
 def cmd_suggest(args: Any) -> None:
+    hooks = get_hook_registry()
+    ctx = hooks.trigger_before("suggest:get")
     plugin = PluginRegistry.get_plugin("smart_suggestions")
     result = plugin.execute()
+    result = hooks.trigger_after("suggest:get", result=result, **ctx)
+    suggestions = result.get("suggestions", []) if isinstance(result, dict) else []
     print("=== Smart Suggestions ===")
-    for s in result["suggestions"]:
+    for s in suggestions:
         print(f"- {s}")
 
 
@@ -286,14 +300,25 @@ def cmd_plugin(args: Any) -> None:
         print(f"Plugin '{name}' created and registered.")
 
     elif args.action == "install":
-        from selfos.plugin_marketplace import install_plugin_from_marketplace
         name = args.name
-        try:
-            dest = install_plugin_from_marketplace(name)
-            print(f"Plugin '{name}' installed in {dest}")
-        except ValueError as e:
-            print(f"[ERROR] {e}")
-            sys.exit(1)
+        if name.startswith("http://") or name.startswith("https://") or name.startswith("git@"):
+            from selfos.plugin_marketplace import install_plugin_from_url
+            try:
+                dest = install_plugin_from_url(name)
+                repo_name = name.rstrip("/").split("/")[-1].replace(".git", "")
+                print(f"Plugin '{repo_name}' installed from {name}")
+                print(f"  Location: {dest}")
+            except (ValueError, RuntimeError) as e:
+                print(f"[ERROR] {e}")
+                sys.exit(1)
+        else:
+            from selfos.plugin_marketplace import install_plugin_from_marketplace
+            try:
+                dest = install_plugin_from_marketplace(name)
+                print(f"Plugin '{name}' installed in {dest}")
+            except ValueError as e:
+                print(f"[ERROR] {e}")
+                sys.exit(1)
 
     elif args.action == "remove":
         from selfos.plugin_marketplace import remove_plugin

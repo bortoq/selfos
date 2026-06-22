@@ -68,6 +68,8 @@ class MarketplacePlugin:
     dependencies: list[str] = field(default_factory=list)
     tags: list[str] = field(default_factory=list)
     min_selfos_version: str = "0.1.0"
+    rating: float = 0.0
+    downloads: int = 0
 
     def to_manifest(self) -> PluginManifest:
         """Создаёт PluginManifest для установки."""
@@ -157,6 +159,10 @@ class PluginMarketplace:
                 pd["dependencies"] = list(p.dependencies)
             if p.tags:
                 pd["tags"] = list(p.tags)
+            if p.rating:
+                pd["rating"] = p.rating
+            if p.downloads:
+                pd["downloads"] = p.downloads
             if p.min_selfos_version != "0.1.0":
                 pd["min_selfos_version"] = p.min_selfos_version
             plugins_data.append(pd)
@@ -200,6 +206,8 @@ class PluginMarketplace:
                     dependencies=list(raw.get("dependencies", [])),
                     tags=list(raw.get("tags", [])),
                     min_selfos_version=str(raw.get("min_selfos_version", "0.1.0")),
+                    rating=float(raw.get("rating", 0.0)),
+                    downloads=int(raw.get("downloads", 0)),
                 ))
             except (ValueError, TypeError):
                 continue
@@ -381,6 +389,78 @@ def check_for_updates(
             })
 
     return updates
+
+
+def install_plugin_from_url(url: str, *, dest_dir: str | None = None) -> str:
+    """
+    Устанавливает плагин из репозитория (Git URL).
+
+    Поддерживает:
+      - GitHub URL: https://github.com/user/repo
+      - Любой Git-репозиторий
+
+    Args:
+        url: URL репозитория с плагином
+        dest_dir: Целевая директория
+
+    Returns:
+        Путь к директории с установленным плагином
+
+    Raises:
+        ValueError: если URL не содержит информацию о плагине
+        RuntimeError: если git не установлен
+    """
+    import os
+
+    from selfos.config import plugins_dir as get_plugins_dir
+    from selfos.plugin_manifest import PluginManifest
+    from selfos.plugin_registry import PluginRegistry
+
+    # Определяем имя плагина из URL
+    repo_name = url.rstrip("/").split("/")[-1]
+    if repo_name.endswith(".git"):
+        repo_name = repo_name[:-4]
+
+    safe_name = repo_name.replace("-", "_").lower()
+    if dest_dir is None:
+        dest_dir = str(get_plugins_dir() / safe_name)
+
+    # Проверяем, установлен ли уже
+    if repo_name in PluginRegistry.list_plugins():
+        raise ValueError(f"Plugin '{repo_name}' is already installed.")
+
+    # Пытаемся клонировать через git
+    import subprocess
+    try:
+        result = subprocess.run(
+            ["git", "clone", url, dest_dir],
+            capture_output=True, text=True, timeout=60,
+        )
+        if result.returncode != 0:
+            # Если git не сработал, падаем с ошибкой
+            raise RuntimeError(
+                f"Failed to clone repository: {result.stderr.strip()}"
+            )
+    except FileNotFoundError:
+        raise RuntimeError(
+            "Git is not installed. Please install git to clone plugin repositories."
+        ) from None
+
+    # Ищем manifest
+    manifest_path = os.path.join(dest_dir, "plugin.yaml")
+    if not os.path.exists(manifest_path):
+        raise ValueError(f"No plugin.yaml found in cloned repository {dest_dir}")
+
+    manifest = PluginManifest.from_file(manifest_path)
+
+    # Добавляем в sys.path
+    import sys
+    plugins_root = str(get_plugins_dir())
+    if plugins_root not in sys.path:
+        sys.path.insert(0, plugins_root)
+
+    PluginRegistry.install_global(manifest)
+    return dest_dir
 
 
 def update_plugin(

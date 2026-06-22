@@ -40,6 +40,16 @@ class BaseSelfOSPlugin(ABC):
         """
         pass
 
+    def on_register(self, hook_registry: Any) -> None:  # noqa: B027
+        """
+        Вызывается после регистрации плагина в PluginRegistry.
+
+        Плагин может подписаться на хуки через hook_registry.subscribe().
+
+        По умолчанию ничего не делает — переопределите в наследнике.
+        """
+        pass
+
     def get_info(self) -> PluginInfo:
         """Возвращает метаданные плагина."""
         return PluginInfo(
