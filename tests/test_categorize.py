@@ -1,5 +1,5 @@
 import pytest
-from scripts.categorize import suggest_category
+from plugins.categorize_plugin import suggest_category
 
 
 def test_suggest_work():

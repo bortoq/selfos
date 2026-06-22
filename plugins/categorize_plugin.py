@@ -8,6 +8,22 @@ import re
 from typing import Dict, Any
 from src.selfos.base_selfos_plugin import BaseSelfOSPlugin
 
+RULES = [
+    (r"(meeting|standup|call|sync)", "Work"),
+    (r"(gym|run|sport|health|doctor)", "Health"),
+    (r"(buy|shop|payment|invoice|salary)", "Finance"),
+    (r"(family|friend|birthday|vacation)", "Personal"),
+]
+
+
+def suggest_category(title: str) -> str:
+    """Предлагает категорию на основе заголовка"""
+    title_lower = title.lower()
+    for pattern, category in RULES:
+        if re.search(pattern, title_lower):
+            return category
+    return "Other"
+
 
 class CategorizePlugin(BaseSelfOSPlugin):
     """
@@ -17,13 +33,6 @@ class CategorizePlugin(BaseSelfOSPlugin):
     name = "categorize"
     description = "Suggests category for events (Work, Personal, Health, Finance, Other)"
 
-    RULES = [
-        (r"(meeting|standup|call|sync)", "Work"),
-        (r"(gym|run|sport|health|doctor)", "Health"),
-        (r"(buy|shop|payment|invoice|salary)", "Finance"),
-        (r"(family|friend|birthday|vacation)", "Personal"),
-    ]
-
     def __init__(self, config: Dict[str, Any] = None):
         super().__init__(config)
 
@@ -31,17 +40,10 @@ class CategorizePlugin(BaseSelfOSPlugin):
         """
         Предлагает категорию для события.
         """
-        category = self._suggest_category(title)
+        category = suggest_category(title)
 
         return {
             "title": title,
             "suggested_category": category,
             "status": "suggested"
         }
-
-    def _suggest_category(self, title: str) -> str:
-        title_lower = title.lower()
-        for pattern, category in self.RULES:
-            if re.search(pattern, title_lower):
-                return category
-        return "Other"

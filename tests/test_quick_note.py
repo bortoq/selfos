@@ -1,5 +1,5 @@
 import pytest
-from scripts.quick_note import suggest_tags_and_category
+from plugins.quick_note_plugin import suggest_tags_and_category
 
 
 def test_suggest_work_meeting():

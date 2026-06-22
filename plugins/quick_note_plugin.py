@@ -9,6 +9,33 @@ from src.selfos.base_selfos_plugin import BaseSelfOSPlugin
 from src.selfos.event_factory import EventFactory
 
 
+def suggest_tags_and_category(text: str) -> Dict[str, Any]:
+    """Простая rule-based логика для предложения тегов и категории"""
+    text_lower = text.lower()
+    tags = []
+    category = "Other"
+
+    if any(word in text_lower for word in ["meeting", "call", "sync"]):
+        tags.append("meeting")
+        category = "Work"
+    if any(word in text_lower for word in ["idea", "thought", "remember"]):
+        tags.append("idea")
+    if any(word in text_lower for word in ["buy", "shop", "need"]):
+        tags.append("shopping")
+        category = "Personal"
+    if any(word in text_lower for word in ["health", "gym", "doctor"]):
+        tags.append("health")
+        category = "Health"
+
+    if not tags:
+        tags = ["note"]
+
+    return {
+        "suggested_tags": tags,
+        "suggested_category": category
+    }
+
+
 class QuickNotePlugin(BaseSelfOSPlugin):
     """
     Плагин для создания заметок с автоматическим предложением тегов и категории.
@@ -24,7 +51,7 @@ class QuickNotePlugin(BaseSelfOSPlugin):
         """
         Создаёт заметку с делегированием.
         """
-        suggestions = self._suggest_tags_and_category(text)
+        suggestions = suggest_tags_and_category(text)
 
         event = EventFactory.create_note_event(
             title=text[:80] + ("..." if len(text) > 80 else ""),
@@ -37,30 +64,4 @@ class QuickNotePlugin(BaseSelfOSPlugin):
         return {
             "event": event,
             "suggestions": suggestions
-        }
-
-    def _suggest_tags_and_category(self, text: str) -> Dict[str, Any]:
-        """Внутренняя логика предложения тегов и категории"""
-        text_lower = text.lower()
-        tags = []
-        category = "Other"
-
-        if any(word in text_lower for word in ["meeting", "call", "sync"]):
-            tags.append("meeting")
-            category = "Work"
-        if any(word in text_lower for word in ["idea", "thought", "remember"]):
-            tags.append("idea")
-        if any(word in text_lower for word in ["buy", "shop", "need"]):
-            tags.append("shopping")
-            category = "Personal"
-        if any(word in text_lower for word in ["health", "gym", "doctor"]):
-            tags.append("health")
-            category = "Health"
-
-        if not tags:
-            tags = ["note"]
-
-        return {
-            "suggested_tags": tags,
-            "suggested_category": category
         }
