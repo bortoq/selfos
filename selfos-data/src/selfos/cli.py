@@ -118,6 +118,22 @@ def cmd_context(args):
             print(f"- {s}")
 
 
+def cmd_delegate(args):
+    from src.selfos.delegation_engine import DelegationEngine
+
+    engine = DelegationEngine()
+
+    if args.action == "enable":
+        engine.set_override(args.action_type, True)
+        print(f"Auto execution enabled for: {args.action_type}")
+    elif args.action == "disable":
+        engine.set_override(args.action_type, False)
+        print(f"Auto execution disabled for: {args.action_type}")
+    elif args.action == "status":
+        allowed = engine.should_auto_execute(args.action_type)
+        print(f"{args.action_type}: {'AUTO' if allowed else 'REVIEW'}")
+
+
 def build_parser():
     parser = argparse.ArgumentParser(prog="selfos", description="Self OS - Personal Operating System")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -194,15 +210,27 @@ def build_parser():
     context_suggest = context_sub.add_parser("suggest", help="Get proactive suggestions")
     context_suggest.set_defaults(func=cmd_context)
 
+    # delegate
+    delegate = subparsers.add_parser("delegate", help="Manage delegation overrides")
+    delegate.add_argument("action", choices=["enable", "disable", "status"])
+    delegate.add_argument("action_type")
+    delegate.set_defaults(func=cmd_delegate)
+
     return parser
 
 
 def main(argv: Optional[List[str]] = None):
+    from src.selfos.unified_interface import interface
+
     parser = build_parser()
     args = parser.parse_args(argv)
+
     if hasattr(args, "func"):
         try:
-            args.func(args)
+            # Используем единый интерфейс
+            result = interface.execute(args.command, **vars(args))
+            if not result.get("success", True):
+                print(f"[ERROR] {result.get('error')}")
         except Exception as e:
             print(f"[ERROR] {e}")
             sys.exit(1)
