@@ -4,6 +4,7 @@ Self OS CLI - Phase 3
 """
 
 import argparse
+import json
 import sys
 from typing import Any
 
@@ -139,6 +140,150 @@ def cmd_delegate(args: Any) -> None:
     elif args.action == "status":
         allowed = engine.should_auto_execute(args.action_type)
         print(f"{args.action_type}: {'AUTO' if allowed else 'REVIEW'}")
+    elif args.action == "rule":
+        _cmd_delegate_rule(engine, args)
+
+
+
+
+def _cmd_delegate_rule(engine: Any, args: Any) -> None:
+    """Handle delegation rule subcommands."""
+    from selfos.delegation_rules import DelegationRule
+
+    if args.rule_action == "list":
+        rules = engine.list_rules()
+        if not rules:
+            print("No delegation rules defined.")
+            return
+        print("=== Delegation Rules ===")
+        for r in rules:
+            status = "ON" if r["enabled"] else "OFF"
+            print(f"  {r['name']} [{status}] (priority {r['priority']})")
+            print(f"    Action: {r['action_type']} -> {r['effect']}")
+            print(f"    Condition: {r['condition_type']} {r.get('condition_params', {})}")
+            if r["description"]:
+                print(f"    Description: {r['description']}")
+            print()
+
+    elif args.rule_action == "add":
+        rule = DelegationRule(
+            name=args.name,
+            action_type=args.action_type,
+            effect=args.effect,
+            condition_type=args.condition_type,
+            condition_params=args.condition_params or {},
+            description=args.description or "",
+            priority=args.priority or 50,
+            enabled=True,
+        )
+        try:
+            engine.add_rule(rule)
+            print(f"Rule '{args.name}' added.")
+        except ValueError as e:
+            print(f"[ERROR] {e}")
+            import sys
+            sys.exit(1)
+
+    elif args.rule_action == "remove":
+        if engine.remove_rule(args.name):
+            print(f"Rule '{args.name}' removed.")
+        else:
+            print(f"Rule '{args.name}' not found.")
+
+    elif args.rule_action == "info":
+        rule = engine.get_rule(args.name)
+        if rule:
+            for k, v in rule.items():
+                k_display = k.replace("_", " ").title()
+                print(f"{k_display}: {v}")
+        else:
+            print(f"Rule '{args.name}' not found.")
+
+def cmd_plugin(args: Any) -> None:
+    """Plugin management commands."""
+    from selfos.plugin_registry import PluginRegistry
+
+    if args.action == "list":
+        meta = PluginRegistry.list_plugins_with_metadata()
+        if not meta:
+            print("No plugins installed.")
+            return
+        print("=== Installed Plugins ===")
+        for info in meta:
+            print(f"  {info['name']} v{info.get('version', '?')}")
+            print(f"    Author: {info.get('author', '?')}")
+            print(f"    Description: {info.get('description', '?')}")
+            if info.get('protocol'):
+                print(f"    Protocol: {info['protocol']}")
+            print()
+
+    elif args.action == "init":
+        from selfos.plugin_sdk import scaffold_plugin
+        name = args.name
+        path = args.path or name.replace("-", "_")
+        files = scaffold_plugin(
+            name=name,
+            dest_dir=path,
+            author=args.author or "",
+            description=args.description or "",
+            protocol=args.protocol or "",
+        )
+        print(f"Created plugin '{name}' in {path}/")
+        for f in files:
+            print(f"  - {f}")
+        print()
+        print("Next steps:")
+        print(f"  1. Implement execute() in {path}/{name.replace('-', '_')}.py")
+        print(f"  2. Register: cd {path} && python -c \"")
+        print("       from selfos.plugin_registry import PluginRegistry")
+        print("       from plugin_manifest import PluginManifest")
+        print("       manifest = PluginManifest.from_file('plugin.yaml')")
+        print("       PluginRegistry.install_global(manifest)")
+        print("     \"")
+        print("  3. Test: selfos plugin list")
+
+    elif args.action == "info":
+        from selfos.plugin_registry import PluginRegistry
+        manifest = PluginRegistry.get_plugin_manifest(args.name)
+        if manifest:
+            print(f"Name: {manifest.name}")
+            print(f"Version: {manifest.version}")
+            print(f"Author: {manifest.author}")
+            print(f"Description: {manifest.description}")
+            print(f"Entry point: {manifest.entry_point}")
+            print(f"Protocol: {manifest.protocol}")
+            if manifest.dependencies:
+                print(f"Dependencies: {', '.join(manifest.dependencies)}")
+        else:
+            # Built-in plugin
+            try:
+                plugin = PluginRegistry.get_plugin(args.name)
+                info = plugin.get_info()
+                for k, v in info.to_dict().items():
+                    print(f"{k.replace('_', ' ').title()}: {v}")
+            except ValueError:
+                print(f"Plugin '{args.name}' not found.")
+                sys.exit(1)
+
+    elif args.action == "create":
+        # create = init + immediate registration
+        from selfos.plugin_manifest import PluginManifest
+        from selfos.plugin_registry import PluginRegistry
+        from selfos.plugin_sdk import scaffold_plugin
+
+        name = args.name
+        path = args.path or name.replace("-", "_")
+        scaffold_plugin(
+            name=name,
+            dest_dir=path,
+            author=args.author or "",
+            description=args.description or "",
+            protocol=args.protocol or "",
+        )
+
+        manifest = PluginManifest.from_file(f"{path}/plugin.yaml")
+        PluginRegistry.install_global(manifest)
+        print(f"Plugin '{name}' created and registered.")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -220,10 +365,83 @@ def build_parser() -> argparse.ArgumentParser:
     context_suggest.set_defaults(func=cmd_context)
 
     # delegate
-    delegate = subparsers.add_parser("delegate", help="Manage delegation overrides")
-    delegate.add_argument("action", choices=["enable", "disable", "status"])
-    delegate.add_argument("action_type")
-    delegate.set_defaults(func=cmd_delegate)
+    delegate = subparsers.add_parser("delegate", help="Manage delegation")
+    delegate_sub = delegate.add_subparsers(dest="action", required=True)
+
+    # legacy: enable/disable/status
+    delegate_enable = delegate_sub.add_parser("enable", help="Enable auto-execution")
+    delegate_enable.add_argument("action_type")
+    delegate_enable.set_defaults(func=cmd_delegate)
+
+    delegate_disable = delegate_sub.add_parser("disable", help="Disable auto-execution")
+    delegate_disable.add_argument("action_type")
+    delegate_disable.set_defaults(func=cmd_delegate)
+
+    delegate_status = delegate_sub.add_parser("status", help="Check delegation status")
+    delegate_status.add_argument("action_type")
+    delegate_status.set_defaults(func=cmd_delegate)
+
+    # rules subcommand
+    delegate_rule = delegate_sub.add_parser("rule", help="Manage delegation rules")
+    delegate_rule_sub = delegate_rule.add_subparsers(dest="rule_action", required=True)
+
+    rule_list = delegate_rule_sub.add_parser("list", help="List all rules")
+    rule_list.set_defaults(func=cmd_delegate)
+
+    rule_add = delegate_rule_sub.add_parser("add", help="Add a delegation rule")
+    rule_add.add_argument("name", help="Rule name (unique identifier)")
+    rule_add.add_argument("action_type", help="Action type (e.g. quick_note)")
+    rule_add.add_argument("--effect", choices=["allow", "deny"], default="allow",
+                          help="Effect when condition matches")
+    rule_add.add_argument("--condition-type", dest="condition_type",
+                          choices=["always", "never", "trust_threshold", "time_range"],
+                          default="always", help="Type of condition")
+    rule_add.add_argument("--condition-params", dest="condition_params",
+                          type=json.loads, default={},
+                          help="Condition parameters (JSON dict)")
+    rule_add.add_argument("--description", "-d", default="", help="Rule description")
+    rule_add.add_argument("--priority", "-p", type=int, default=50,
+                          help="Rule priority (higher = higher priority)")
+    rule_add.set_defaults(func=cmd_delegate)
+
+    rule_remove = delegate_rule_sub.add_parser("remove", help="Remove a rule")
+    rule_remove.add_argument("name", help="Rule name")
+    rule_remove.set_defaults(func=cmd_delegate)
+
+    rule_info = delegate_rule_sub.add_parser("info", help="Show rule details")
+    rule_info.add_argument("name", help="Rule name")
+    rule_info.set_defaults(func=cmd_delegate)
+
+    # plugin management (Phase 4)
+    plugin = subparsers.add_parser("plugin", help="Manage plugins")
+    plugin_sub = plugin.add_subparsers(dest="action", required=True)
+
+    plugin_list = plugin_sub.add_parser("list", help="List installed plugins")
+    plugin_list.set_defaults(func=cmd_plugin)
+
+    plugin_init = plugin_sub.add_parser("init", help="Scaffold a new plugin")
+    plugin_init.add_argument("name", help="Plugin name (e.g. my-plugin)")
+    plugin_init.add_argument("--author", help="Author name")
+    plugin_init.add_argument("--description", help="Plugin description")
+    plugin_init.add_argument("--protocol", choices=[
+        "", "NotingPlugin", "CategorizerPlugin", "SummarizerPlugin",
+    ], default="", help="Protocol to implement")
+    plugin_init.add_argument("--path", "-p", help="Target directory")
+    plugin_init.set_defaults(func=cmd_plugin)
+
+    plugin_info = plugin_sub.add_parser("info", help="Show plugin metadata")
+    plugin_info.add_argument("name", help="Plugin name")
+    plugin_info.set_defaults(func=cmd_plugin)
+
+    plugin_create = plugin_sub.add_parser("create", help="Create and register a plugin")
+    plugin_create.add_argument("name", help="Plugin name")
+    plugin_create.add_argument("--author", help="Author name")
+    plugin_create.add_argument("--description", help="Plugin description")
+    plugin_create.add_argument("--protocol", choices=[
+        "", "NotingPlugin", "CategorizerPlugin", "SummarizerPlugin",
+    ], default="", help="Protocol to implement")
+    plugin_create.add_argument("--path", "-p", help="Target directory")
+    plugin_create.set_defaults(func=cmd_plugin)
 
     return parser
 

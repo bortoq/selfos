@@ -1,21 +1,33 @@
 """
-BaseSelfOSPlugin — базовый класс для внутренних плагинов Self OS.
+BaseSelfOSPlugin — базовый класс для плагинов Self OS.
 
-Все плагины, которые реализуют функциональность внутри Self OS 
-(а не интеграцию с внешними сервисами), должны наследоваться от этого класса.
+Все плагины Self OS должны наследоваться от этого класса.
 """
 
 from abc import ABC, abstractmethod
 from typing import Any
 
+from selfos.plugin_manifest import PluginInfo
+
 
 class BaseSelfOSPlugin(ABC):
     """
     Базовый класс для плагинов Self OS.
+
+    Атрибуты класса (переопределяются в наследниках):
+        name:        Уникальное имя плагина (обязательно)
+        description: Краткое описание (обязательно)
+        version:     Семантическая версия (рекомендуется)
+        author:      Имя автора (рекомендуется)
+        dependencies: Список зависимостей (опционально)
     """
 
     name: str = "base"
     description: str = "Base Self OS Plugin"
+    version: str = "0.1.0"
+    author: str = "Self OS Team"
+    dependencies: list[str] = []
+    protocol: str = ""
 
     def __init__(self, config: dict[str, Any] | None = None) -> None:
         self.config = config or {}
@@ -24,11 +36,17 @@ class BaseSelfOSPlugin(ABC):
     def execute(self, **kwargs: Any) -> dict[str, Any]:
         """
         Основной метод выполнения плагина.
+        Должен быть переопределён в наследниках.
         """
         pass
 
-    def get_name(self) -> str:
-        return self.name
-
-    def get_description(self) -> str:
-        return self.description
+    def get_info(self) -> PluginInfo:
+        """Возвращает метаданные плагина."""
+        return PluginInfo(
+            name=self.name,
+            version=self.version,
+            author=self.author,
+            description=self.description,
+            dependencies=self.dependencies,
+            protocol=self.protocol,
+        )

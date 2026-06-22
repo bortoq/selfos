@@ -16,25 +16,39 @@
 | Browser Service | ✅ Работает |
 | Delegation Engine | ✅ Работает |
 | UnifiedInterface (единая точка входа) | ✅ Работает (CLI, заготовка Web/Voice) |
+| Plugin Platform (Manifest + SDK + CLI) | ✅ Работает (Phase 4, Stage 1) |
 | Web Interface | ⏸ Заглушка |
 
 ## Метрики качества
 
 | Метрика | Значение |
 |---------|---------|
-| Тесты | 92 passed |
+| Тесты | 115+ passed |
 | Ruff | 0 errors |
-| Mypy (src/selfos/) | 0 errors (21 files) |
+| Mypy (src/selfos/) | 0 errors (23 files) |
 | Покрытие | ~66% |
 | CI | Блокирует регрессии |
 
 ## Что сделано
 
-- P0: CLI, мёртвый код, workflows — исправлено
-- P1: Бизнес-логика из scripts/ → src/selfos/, print → logging, ruff
-- P2: UUID v4, изоляция тестов, smoke-тесты CLI, CLI error propagation
-- P3: Mypy strict 0 errors, docs обновлены
-- P3: Зачистка scripts/tag_suggestion.py (дубликат плагина)
-- P2: PluginRegistry — инстанс-базированный (тестируемый)
-- P2: plugin_contracts.py — TypedDicts + Protocols для плагинов
-- Fix: context_engine — except:pass → logging, timestamp с offset
+- Phase 3:
+  - P0: CLI, мёртвый код, workflows — исправлено
+  - P1: Бизнес-логика из scripts/ → src/selfos/, print → logging, ruff
+  - P2: UUID v4, изоляция тестов, smoke-тесты CLI, CLI error propagation
+  - P3: Mypy strict 0 errors, docs обновлены
+  - Зачистка scripts/ (дубликаты → thin wrappers)
+  - PluginRegistry — инстанс-базированный
+  - plugin_contracts.py — TypedDicts + Protocols
+  - context_engine — except:pass → logging
+- Phase 4 / Stage 1 (Platform):
+  - Plugin Manifest (plugin.yaml, dataclass + YAML)
+  - Plugin SDK (create_plugin(), scaffold_plugin(), validate_plugin())
+  - Plugin Template (selfos plugin init / create)
+  - Metadata (author, version, dependencies в BaseSelfOSPlugin)
+  - CLI: selfos plugin list / info / init / create
+- Phase 4 / Stage 2 (Delegation Rules):
+  - Delegation Rules DSL (YAML-формат: ~/.selfos/rules.yaml)
+  - DelegationRule dataclass + DelegationRuleSet (load/save/validate/match)
+  - Механизм применения правил в DelegationEngine.should_auto_execute()
+  - CLI: selfos delegate rule add / list / remove / info
+  - Типы условий: always, never, trust_threshold, time_range

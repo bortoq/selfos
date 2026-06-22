@@ -37,3 +37,13 @@ def config_file() -> Path:
 def media_dir() -> Path:
     """Директория для медиа-файлов."""
     return _get_home() / "media"
+
+
+def plugins_dir() -> Path:
+    """Директория для пользовательских плагинов."""
+    return _get_home() / "plugins"
+
+
+def rules_file() -> Path:
+    """Файл пользовательских правил делегирования."""
+    return _get_home() / "rules.yaml"

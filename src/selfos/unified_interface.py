@@ -71,6 +71,7 @@ def register_default_handlers() -> None:
         cmd_delegate,
         cmd_email,
         cmd_note,
+        cmd_plugin,
         cmd_schedule,
         cmd_status,
         cmd_suggest,
@@ -86,6 +87,7 @@ def register_default_handlers() -> None:
     interface.register_handler("browser", cmd_browser)
     interface.register_handler("context", cmd_context)
     interface.register_handler("delegate", cmd_delegate)
+    interface.register_handler("plugin", cmd_plugin)
 
 
 # Автоматическая регистрация при импорте
