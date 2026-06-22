@@ -1,4 +1,3 @@
-import pytest
 from src.selfos.delegation_engine import DelegationEngine
 
 

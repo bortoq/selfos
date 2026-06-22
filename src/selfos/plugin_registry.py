@@ -2,14 +2,14 @@
 PluginRegistry — реестр плагинов Self OS.
 """
 
-from typing import Dict, Type, List, Optional
+
 
 class PluginRegistry:
-    _plugins: Dict[str, Type] = {}
-    _instances: Dict[str, object] = {}
+    _plugins: dict[str, type] = {}
+    _instances: dict[str, object] = {}
 
     @classmethod
-    def register(cls, name: str, plugin_class: Type):
+    def register(cls, name: str, plugin_class: type):
         if not name:
             raise ValueError("Plugin name cannot be empty")
         if name in cls._plugins:
@@ -17,7 +17,7 @@ class PluginRegistry:
         cls._plugins[name] = plugin_class
 
     @classmethod
-    def get_plugin(cls, name: str, config: Optional[Dict] = None) -> object:
+    def get_plugin(cls, name: str, config: dict | None = None) -> object:
         if name not in cls._plugins:
             raise ValueError(f"Plugin '{name}' is not registered")
         if name not in cls._instances:
@@ -26,7 +26,7 @@ class PluginRegistry:
         return cls._instances[name]
 
     @classmethod
-    def list_plugins(cls) -> List[str]:
+    def list_plugins(cls) -> list[str]:
         return list(cls._plugins.keys())
 
     @classmethod
@@ -37,18 +37,18 @@ class PluginRegistry:
 
 # === Регистрация плагинов ===
 
+from plugins.auto_categorize_plugin import AutoCategorizePlugin
 from plugins.calendar_plugin import CalendarPlugin
-from plugins.todoist_plugin import TodoistPlugin
-from plugins.quick_note_plugin import QuickNotePlugin
 from plugins.categorize_plugin import CategorizePlugin
 from plugins.daily_summary_plugin import DailySummaryPlugin
-from plugins.tag_suggestion_plugin import TagSuggestionPlugin
-from plugins.smart_suggestions_plugin import SmartSuggestionsPlugin
-from plugins.weekly_report_plugin import WeeklyReportPlugin
 from plugins.enable_auto_plugin import EnableAutoPlugin
-from plugins.auto_categorize_plugin import AutoCategorizePlugin
+from plugins.quick_note_plugin import QuickNotePlugin
 from plugins.show_auto_status_plugin import ShowAutoStatusPlugin
+from plugins.smart_suggestions_plugin import SmartSuggestionsPlugin
+from plugins.tag_suggestion_plugin import TagSuggestionPlugin
+from plugins.todoist_plugin import TodoistPlugin
 from plugins.update_dashboard_plugin import UpdateDashboardPlugin
+from plugins.weekly_report_plugin import WeeklyReportPlugin
 
 PluginRegistry.register("calendar", CalendarPlugin)
 PluginRegistry.register("todoist", TodoistPlugin)

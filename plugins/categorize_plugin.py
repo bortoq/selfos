@@ -5,7 +5,8 @@ CategorizePlugin — плагин для категоризации событи
 """
 
 import re
-from typing import Dict, Any
+from typing import Any
+
 from src.selfos.base_selfos_plugin import BaseSelfOSPlugin
 
 RULES = [
@@ -33,10 +34,10 @@ class CategorizePlugin(BaseSelfOSPlugin):
     name = "categorize"
     description = "Suggests category for events (Work, Personal, Health, Finance, Other)"
 
-    def __init__(self, config: Dict[str, Any] = None):
+    def __init__(self, config: dict[str, Any] = None):
         super().__init__(config)
 
-    def execute(self, title: str, **kwargs) -> Dict[str, Any]:
+    def execute(self, title: str, **kwargs) -> dict[str, Any]:
         """
         Предлагает категорию для события.
         """

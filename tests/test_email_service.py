@@ -1,4 +1,3 @@
-import pytest
 from src.selfos.email.service import EmailService
 
 

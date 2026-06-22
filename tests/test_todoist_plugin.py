@@ -1,4 +1,3 @@
-import pytest
 from plugins.todoist_plugin import TodoistPlugin
 
 

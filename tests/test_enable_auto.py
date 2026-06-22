@@ -1,7 +1,6 @@
-import tempfile
 import yaml
-from pathlib import Path
-from scripts.enable_auto import enable_auto, disable_auto
+
+from scripts.enable_auto import disable_auto, enable_auto
 
 
 def test_enable_auto(tmp_path, monkeypatch):

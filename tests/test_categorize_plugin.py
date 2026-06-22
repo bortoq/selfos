@@ -1,4 +1,3 @@
-import pytest
 from plugins.categorize_plugin import CategorizePlugin
 
 

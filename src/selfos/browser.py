@@ -5,8 +5,7 @@ Provides quick access and navigation to web services.
 This is a lightweight abstraction layer.
 """
 
-from typing import Dict, Any
-from datetime import datetime
+from typing import Any
 
 
 class QuickLink:
@@ -17,7 +16,7 @@ class QuickLink:
         self.url = url
         self.category = category
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "name": self.name,
             "url": self.url,
@@ -31,7 +30,7 @@ class BrowserService:
     """
 
     def __init__(self):
-        self.links: Dict[str, QuickLink] = {}
+        self.links: dict[str, QuickLink] = {}
         self._init_default_links()
 
     def _init_default_links(self):

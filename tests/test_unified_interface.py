@@ -1,4 +1,3 @@
-import pytest
 from src.selfos.unified_interface import UnifiedInterface
 
 

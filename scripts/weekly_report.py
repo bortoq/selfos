@@ -5,9 +5,9 @@ Generates a simple weekly activity report.
 """
 
 import json
-from pathlib import Path
-from datetime import datetime, timedelta
 from collections import defaultdict
+from datetime import datetime, timedelta
+from pathlib import Path
 
 DATA_DIR = Path("data/activity")
 
@@ -20,7 +20,7 @@ def load_last_7_days_events():
         day = today - timedelta(days=i)
         file = DATA_DIR / f"{day.isoformat()}.json"
         if file.exists():
-            with open(file, 'r') as f:
+            with open(file) as f:
                 events.extend(json.load(f))
     return events
 
@@ -59,7 +59,10 @@ def generate_weekly_report(events):
     # Simple correlation example
     high_commit_days = [d for d, c in daily_counts.items() if c > 5]
     if high_commit_days:
-        report += f"\n**Note:** On days with high activity (>5 events), consider checking Health category.\n"
+        report += (
+            "\n**Note:** On days with high activity (>5 events),"
+            " consider checking Health category.\n"
+        )
 
     return report
 

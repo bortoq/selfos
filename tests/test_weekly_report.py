@@ -1,4 +1,3 @@
-import pytest
 from scripts.weekly_report import generate_weekly_report
 
 

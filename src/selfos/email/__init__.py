@@ -4,9 +4,9 @@ Self OS Email Module
 Provides real email functionality with delegation support.
 """
 
-from .base import EmailProvider, EmailMessage
-from .smtp_provider import SMTPProvider
+from .base import EmailMessage, EmailProvider
 from .delegation import can_delegate_email, suggest_email_with_trust
+from .smtp_provider import SMTPProvider
 
 __all__ = [
     "EmailProvider",

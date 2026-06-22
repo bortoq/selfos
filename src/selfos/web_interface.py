@@ -4,7 +4,6 @@ WebInterface — заготовка веб-интерфейса для Self OS (
 В будущем здесь будет FastAPI / Flask приложение.
 """
 
-from typing import Dict, Any
 
 
 class WebInterface:
@@ -13,7 +12,7 @@ class WebInterface:
     """
 
     def __init__(self):
-        self.routes: Dict[str, str] = {
+        self.routes: dict[str, str] = {
             "/": "Self OS Dashboard (coming soon)",
             "/status": "System status",
             "/context": "Context Engine",
@@ -23,7 +22,7 @@ class WebInterface:
     def get_route(self, path: str) -> str:
         return self.routes.get(path, "404 - Not Found")
 
-    def list_routes(self) -> Dict[str, str]:
+    def list_routes(self) -> dict[str, str]:
         return self.routes
 
 

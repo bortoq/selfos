@@ -1,4 +1,3 @@
-import pytest
 from plugins.weekly_report_plugin import WeeklyReportPlugin
 
 

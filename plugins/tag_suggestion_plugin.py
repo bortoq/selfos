@@ -3,7 +3,8 @@ TagSuggestionPlugin — плагин для предложения тегов к
 """
 
 import re
-from typing import Dict, Any, List
+from typing import Any
+
 from src.selfos.base_selfos_plugin import BaseSelfOSPlugin
 
 
@@ -20,14 +21,14 @@ class TagSuggestionPlugin(BaseSelfOSPlugin):
         (r"(personal|family|friend)", ["personal"]),
     ]
 
-    def execute(self, title: str, **kwargs) -> Dict[str, Any]:
+    def execute(self, title: str, **kwargs) -> dict[str, Any]:
         tags = self._suggest_tags(title)
         return {
             "title": title,
             "suggested_tags": tags
         }
 
-    def _suggest_tags(self, title: str) -> List[str]:
+    def _suggest_tags(self, title: str) -> list[str]:
         tags = set()
         title_lower = title.lower()
         for pattern, tag_list in self.TAG_RULES:

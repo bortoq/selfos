@@ -34,7 +34,7 @@ jobs:
         run: mypy src/selfos --ignore-missing-imports || true
 
       - name: Run tests
-        run: pytest tests/ -q --tb=no || true
+        run: pytest tests/ -q --tb=no
 
       - name: Validate Architecture Contract
         run: |

@@ -1,4 +1,3 @@
-import pytest
 from plugins.quick_note_plugin import QuickNotePlugin
 
 

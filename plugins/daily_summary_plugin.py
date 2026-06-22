@@ -4,7 +4,8 @@ DailySummaryPlugin — плагин для генерации ежедневно
 Переведён из scripts/daily_summary.py в соответствии с Architecture Contract.
 """
 
-from typing import Dict, Any, List
+from typing import Any
+
 from src.selfos.base_selfos_plugin import BaseSelfOSPlugin
 
 
@@ -16,10 +17,10 @@ class DailySummaryPlugin(BaseSelfOSPlugin):
     name = "daily_summary"
     description = "Generates daily activity summary"
 
-    def __init__(self, config: Dict[str, Any] = None):
+    def __init__(self, config: dict[str, Any] = None):
         super().__init__(config)
 
-    def execute(self, events: List[Dict[str, Any]], **kwargs) -> Dict[str, Any]:
+    def execute(self, events: list[dict[str, Any]], **kwargs) -> dict[str, Any]:
         """
         Генерирует сводку на основе списка событий.
         """

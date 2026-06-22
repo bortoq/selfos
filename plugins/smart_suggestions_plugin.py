@@ -2,7 +2,8 @@
 SmartSuggestionsPlugin — плагин для генерации умных предложений.
 """
 
-from typing import Dict, Any, List
+from typing import Any
+
 from src.selfos.base_selfos_plugin import BaseSelfOSPlugin
 
 
@@ -10,13 +11,13 @@ class SmartSuggestionsPlugin(BaseSelfOSPlugin):
     name = "smart_suggestions"
     description = "Generates smart proactive suggestions based on activity"
 
-    def execute(self, recent_events: List[Dict[str, Any]] = None, **kwargs) -> Dict[str, Any]:
+    def execute(self, recent_events: list[dict[str, Any]] = None, **kwargs) -> dict[str, Any]:
         suggestions = self._generate_suggestions(recent_events or [])
         return {
             "suggestions": suggestions
         }
 
-    def _generate_suggestions(self, events: List[Dict[str, Any]]) -> List[str]:
+    def _generate_suggestions(self, events: list[dict[str, Any]]) -> list[str]:
         suggestions = []
         has_meeting = any("meeting" in str(e).lower() for e in events)
         has_work = any("phase" in str(e).lower() or "plugin" in str(e).lower() for e in events)

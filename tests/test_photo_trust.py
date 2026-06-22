@@ -1,6 +1,5 @@
-import pytest
 from scripts.photo_trust import classify_and_trust
-from scripts.trust_manager_v2 import reset_trust, increase_trust
+from scripts.trust_manager_v2 import increase_trust, reset_trust
 
 
 def test_classify_and_trust_review_mode():

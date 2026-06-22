@@ -1,4 +1,3 @@
-import pytest
 from plugins.tag_suggestion_plugin import TagSuggestionPlugin
 
 

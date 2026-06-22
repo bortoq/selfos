@@ -5,9 +5,9 @@ Self OS CLI - Phase 3
 
 import argparse
 import sys
-from typing import List, Optional
-from src.selfos.plugin_registry import PluginRegistry
+
 from src.selfos.event_factory import EventFactory
+from src.selfos.plugin_registry import PluginRegistry
 
 
 def cmd_note(args):
@@ -18,7 +18,7 @@ def cmd_note(args):
 
 def cmd_task(args):
     title = " ".join(args.text)
-    event = EventFactory.create_task_event(
+    EventFactory.create_task_event(
         title,
         project=args.project or "Self OS",
         priority=args.priority or 2
@@ -64,7 +64,7 @@ def cmd_email(args):
         subject = input("Subject: ").strip()
         body = input("Body (optional): ").strip()
         suggestion = service.suggest_email(to, subject, body)
-        print(f"\n=== Suggested Email ===")
+        print("\n=== Suggested Email ===")
         print(f"To: {suggestion['message']['to']}")
         print(f"Subject: {suggestion['message']['subject']}")
         print(f"Body:\n{suggestion['message']['body']}")
@@ -135,7 +135,9 @@ def cmd_delegate(args):
 
 
 def build_parser():
-    parser = argparse.ArgumentParser(prog="selfos", description="Self OS - Personal Operating System")
+    parser = argparse.ArgumentParser(
+        prog="selfos", description="Self OS - Personal Operating System"
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # note
@@ -219,18 +221,13 @@ def build_parser():
     return parser
 
 
-def main(argv: Optional[List[str]] = None):
-    from src.selfos.unified_interface import interface
-
+def main(argv: list[str] | None = None):
     parser = build_parser()
     args = parser.parse_args(argv)
 
     if hasattr(args, "func"):
         try:
-            # Используем единый интерфейс
-            result = interface.execute(args.command, **vars(args))
-            if not result.get("success", True):
-                print(f"[ERROR] {result.get('error')}")
+            args.func(args)
         except Exception as e:
             print(f"[ERROR] {e}")
             sys.exit(1)

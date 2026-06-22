@@ -2,7 +2,8 @@
 WeeklyReportPlugin — плагин для генерации еженедельного отчёта.
 """
 
-from typing import Dict, Any, List
+from typing import Any
+
 from src.selfos.base_selfos_plugin import BaseSelfOSPlugin
 
 
@@ -10,7 +11,7 @@ class WeeklyReportPlugin(BaseSelfOSPlugin):
     name = "weekly_report"
     description = "Generates weekly activity report"
 
-    def execute(self, events: List[Dict[str, Any]] = None, **kwargs) -> Dict[str, Any]:
+    def execute(self, events: list[dict[str, Any]] = None, **kwargs) -> dict[str, Any]:
         events = events or []
         if not events:
             return {"report": "No activity in the last 7 days."}

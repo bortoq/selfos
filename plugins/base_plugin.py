@@ -5,7 +5,7 @@ All external service plugins must inherit from this class.
 """
 
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any
+from typing import Any
 
 
 class BasePlugin(ABC):
@@ -19,11 +19,11 @@ class BasePlugin(ABC):
     name: str = "base"
     description: str = "Base plugin"
 
-    def __init__(self, config: Dict[str, Any] = None):
+    def __init__(self, config: dict[str, Any] = None):
         self.config = config or {}
 
     @abstractmethod
-    def fetch(self) -> List[Dict[str, Any]]:
+    def fetch(self) -> list[dict[str, Any]]:
         """
         Fetch new events/activities from the external service.
 
@@ -32,7 +32,7 @@ class BasePlugin(ABC):
         """
         pass
 
-    def push(self, event: Dict[str, Any]) -> bool:
+    def push(self, event: dict[str, Any]) -> bool:
         """
         Push an event back to the external service (optional).
 

@@ -1,4 +1,3 @@
-import pytest
 from scripts.smart_suggestions import generate_smart_suggestions
 
 

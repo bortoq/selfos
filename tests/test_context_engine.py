@@ -1,4 +1,3 @@
-import pytest
 from src.selfos.context_engine import ContextEngine
 
 

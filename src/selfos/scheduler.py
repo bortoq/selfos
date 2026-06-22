@@ -5,9 +5,11 @@ Scheduler Module for Self OS (Phase 3)
 Заменяет базовые функции Todoist + Calendar.
 """
 
-from typing import List, Dict, Any
 from datetime import datetime, timedelta
-from scripts.create_task import create_task_event, save_event as save_activity
+from typing import Any
+
+from scripts.create_task import create_task_event
+from scripts.create_task import save_event as save_activity
 
 
 class Scheduler:
@@ -16,10 +18,10 @@ class Scheduler:
     """
 
     def __init__(self):
-        self.tasks: List[Dict[str, Any]] = []
-        self.events: List[Dict[str, Any]] = []
+        self.tasks: list[dict[str, Any]] = []
+        self.events: list[dict[str, Any]] = []
 
-    def add_task(self, title: str, due_date: str = None, priority: int = 2) -> Dict[str, Any]:
+    def add_task(self, title: str, due_date: str = None, priority: int = 2) -> dict[str, Any]:
         """Добавить задачу"""
         task = create_task_event(title, project="Scheduler", priority=priority)
         task["metadata"]["due_date"] = due_date
@@ -29,7 +31,7 @@ class Scheduler:
         save_activity(task)
         return task
 
-    def add_event(self, title: str, start_time: str, duration_minutes: int = 60) -> Dict[str, Any]:
+    def add_event(self, title: str, start_time: str, duration_minutes: int = 60) -> dict[str, Any]:
         """Добавить событие (встречу)"""
         event = {
             "id": f"event-{datetime.now().strftime('%Y%m%d%H%M%S')}",
@@ -46,13 +48,13 @@ class Scheduler:
         save_activity(event)
         return event
 
-    def list_tasks(self, status: str = None) -> List[Dict[str, Any]]:
+    def list_tasks(self, status: str = None) -> list[dict[str, Any]]:
         """Получить список задач"""
         if status:
             return [t for t in self.tasks if t["metadata"].get("status") == status]
         return self.tasks
 
-    def list_upcoming_events(self, days: int = 7) -> List[Dict[str, Any]]:
+    def list_upcoming_events(self, days: int = 7) -> list[dict[str, Any]]:
         """Получить события на ближайшие N дней"""
         now = datetime.now()
         future = now + timedelta(days=days)

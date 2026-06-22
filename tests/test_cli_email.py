@@ -1,4 +1,3 @@
-import pytest
 from src.selfos.cli import build_parser
 
 

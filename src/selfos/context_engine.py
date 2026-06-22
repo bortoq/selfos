@@ -6,10 +6,10 @@ Context Engine for Self OS (Phase 3)
 """
 
 import json
-from pathlib import Path
-from datetime import datetime, timedelta
 from collections import defaultdict
-from typing import List, Dict, Any
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any
 
 
 class ContextEngine:
@@ -19,7 +19,7 @@ class ContextEngine:
 
     def __init__(self, data_dir: str = "data/activity"):
         self.data_dir = Path(data_dir)
-        self.events: List[Dict[str, Any]] = []
+        self.events: list[dict[str, Any]] = []
         self._load_events()
 
     def _load_events(self, days: int = 30):
@@ -31,10 +31,10 @@ class ContextEngine:
             day = today - timedelta(days=i)
             file = self.data_dir / f"{day.isoformat()}.json"
             if file.exists():
-                with open(file, 'r') as f:
+                with open(file) as f:
                     self.events.extend(json.load(f))
 
-    def get_patterns(self) -> Dict[str, Any]:
+    def get_patterns(self) -> dict[str, Any]:
         """Выявляет основные паттерны поведения"""
         if not self.events:
             return {"message": "Недостаточно данных для анализа"}
@@ -53,7 +53,7 @@ class ContextEngine:
                 hour = int(event["timestamp"][11:13])
                 if cat == "Work" and hour >= 20:
                     late_work_count += 1
-            except:
+            except Exception:
                 pass
 
             if cat == "Health":
@@ -70,7 +70,7 @@ class ContextEngine:
 
         return patterns
 
-    def get_proactive_suggestions(self) -> List[str]:
+    def get_proactive_suggestions(self) -> list[str]:
         """Генерирует проактивные предложения на основе контекста"""
         patterns = self.get_patterns()
         suggestions = []
@@ -84,14 +84,16 @@ class ContextEngine:
         # Паттерн: мало внимания здоровью
         if patterns.get("health_activity", 0) < 3:
             suggestions.append(
-                "В последние недели мало событий в категории Health. Возможно, стоит запланировать прогулки или спорт."
+                "В последние недели мало событий в категории Health."
+            " Возможно, стоит запланировать прогулки или спорт."
             )
 
         # Паттерн: доминирование одной категории
         top_cats = patterns.get("top_categories", [])
         if top_cats and top_cats[0][1] / patterns["total_events"] > 0.6:
             suggestions.append(
-                f"Большинство событий ({top_cats[0][0]}) доминирует. Рассмотрите баланс между категориями."
+                f"Большинство событий ({top_cats[0][0]}) доминирует."
+            f" Рассмотрите баланс между категориями."
             )
 
         if not suggestions:

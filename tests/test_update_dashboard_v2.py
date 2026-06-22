@@ -1,6 +1,3 @@
-import tempfile
-from pathlib import Path
-import pytest
 from scripts.update_dashboard_v2 import calculate_stats, generate_score
 
 

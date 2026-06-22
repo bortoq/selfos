@@ -1,4 +1,3 @@
-import pytest
 from plugins.calendar_plugin import CalendarPlugin
 
 

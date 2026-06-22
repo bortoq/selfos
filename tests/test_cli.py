@@ -1,4 +1,5 @@
 import pytest
+
 from src.selfos.cli import build_parser
 
 
@@ -11,7 +12,9 @@ def test_cli_note_command():
 
 def test_cli_task_command():
     parser = build_parser()
-    args = parser.parse_args(["task", "Finish", "Phase", "3", "--project", "SelfOS", "--priority", "1"])
+    args = parser.parse_args(
+        ["task", "Finish", "Phase", "3", "--project", "SelfOS", "--priority", "1"]
+    )
     assert args.command == "task"
     assert args.project == "SelfOS"
     assert args.priority == 1

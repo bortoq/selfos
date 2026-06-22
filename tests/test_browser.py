@@ -1,10 +1,9 @@
-import pytest
 from src.selfos.browser import BrowserService
 
 
 def test_browser_add_and_get_link():
     browser = BrowserService()
-    link = browser.add_link("selfos", "https://github.com/bortoq/selfos", "development")
+    browser.add_link("selfos", "https://github.com/bortoq/selfos", "development")
     assert browser.get_link("selfos").url == "https://github.com/bortoq/selfos"
 
 

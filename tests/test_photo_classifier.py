@@ -1,4 +1,3 @@
-import pytest
 from scripts.photo_classifier import classify_photo
 
 

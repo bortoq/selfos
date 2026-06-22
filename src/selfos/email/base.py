@@ -3,8 +3,7 @@ Base classes for email functionality.
 """
 
 from dataclasses import dataclass
-from typing import Protocol, Optional
-from datetime import datetime
+from typing import Protocol
 
 
 @dataclass
@@ -12,7 +11,7 @@ class EmailMessage:
     to: str
     subject: str
     body: str
-    from_email: Optional[str] = None
+    from_email: str | None = None
 
 
 class EmailProvider(Protocol):

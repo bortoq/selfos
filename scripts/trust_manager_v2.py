@@ -10,8 +10,9 @@ Extends trust system to support new action types:
 """
 
 import json
-import yaml
 from pathlib import Path
+
+import yaml
 
 TRUST_FILE = Path("data/trust.json")
 CONFIG_FILE = Path("selfos.yaml")
@@ -26,14 +27,14 @@ NEW_ACTIONS = [
 
 def load_config():
     if CONFIG_FILE.exists():
-        with open(CONFIG_FILE, 'r') as f:
+        with open(CONFIG_FILE) as f:
             return yaml.safe_load(f)
     return {}
 
 
 def load_trust():
     if TRUST_FILE.exists():
-        with open(TRUST_FILE, 'r') as f:
+        with open(TRUST_FILE) as f:
             return json.load(f)
     return {}
 

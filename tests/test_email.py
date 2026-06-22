@@ -1,4 +1,3 @@
-import pytest
 from src.selfos.email.base import EmailMessage
 from src.selfos.email.smtp_provider import SMTPProvider
 

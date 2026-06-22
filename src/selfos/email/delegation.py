@@ -4,7 +4,6 @@ Email Delegation Logic
 Интеграция с системой доверия Self OS.
 """
 
-from typing import Optional
 import sys
 from pathlib import Path
 

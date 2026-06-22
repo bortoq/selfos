@@ -1,4 +1,3 @@
-import pytest
 from src.selfos.scheduler import Scheduler
 
 

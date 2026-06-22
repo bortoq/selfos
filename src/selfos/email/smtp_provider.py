@@ -2,12 +2,12 @@
 SMTP Email Provider - Real email sending implementation.
 """
 
-import smtplib
 import os
-from email.mime.text import MIMEText
+import smtplib
 from email.mime.multipart import MIMEMultipart
-from typing import Optional
-from .base import EmailProvider, EmailMessage
+from email.mime.text import MIMEText
+
+from .base import EmailMessage
 
 
 class SMTPProvider:

@@ -9,8 +9,8 @@ UnifiedInterface — единый интерфейс Self OS (Phase 3, Этап 
 Предоставляет единую точку входа для пользователя.
 """
 
-from typing import Dict, Any, Callable
-from src.selfos.plugin_registry import PluginRegistry
+from collections.abc import Callable
+from typing import Any
 
 
 class UnifiedInterface:
@@ -19,13 +19,13 @@ class UnifiedInterface:
     """
 
     def __init__(self):
-        self.handlers: Dict[str, Callable] = {}
+        self.handlers: dict[str, Callable] = {}
 
     def register_handler(self, command: str, handler: Callable):
         """Регистрирует обработчик команды"""
         self.handlers[command] = handler
 
-    def execute(self, command: str, **kwargs) -> Dict[str, Any]:
+    def execute(self, command: str, **kwargs) -> dict[str, Any]:
         """Выполняет команду через единый интерфейс"""
         if command not in self.handlers:
             return {
@@ -58,8 +58,15 @@ interface = UnifiedInterface()
 def register_default_handlers():
     """Регистрирует базовые обработчики"""
     from src.selfos.cli import (
-        cmd_note, cmd_task, cmd_status, cmd_suggest,
-        cmd_email, cmd_schedule, cmd_browser, cmd_context, cmd_delegate
+        cmd_browser,
+        cmd_context,
+        cmd_delegate,
+        cmd_email,
+        cmd_note,
+        cmd_schedule,
+        cmd_status,
+        cmd_suggest,
+        cmd_task,
     )
 
     interface.register_handler("note", cmd_note)
