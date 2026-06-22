@@ -1,18 +1,18 @@
 from __future__ import annotations
 
 import base64
+import importlib.util
 import json
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
+import httpx
 import pytest
-
-pytest.importorskip("pytest_recording")
 
 from selfos.integrations.token_store import OAuthToken
 from selfos.plugins.gmail_plugin import GmailPlugin
 
-pytestmark = pytest.mark.vcr(record_mode="once")
+HAS_PYTEST_RECORDING = importlib.util.find_spec("pytest_recording") is not None
 
 
 class FakeOAuthManager:
@@ -88,9 +88,86 @@ class GmailHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
 
+def _response(payload: dict[str, object]) -> httpx.Response:
+    return httpx.Response(200, json=payload)
+
+
+def _gmail_mock_handler(request: httpx.Request) -> httpx.Response:
+    path = request.url.path
+    query = request.url.query.decode("utf-8")
+    if path.endswith("/messages") and query == "maxResults=1&q=is%3Aunread":
+        return _response({"resultSizeEstimate": 7, "messages": [{"id": "m1"}]})
+    if path.endswith("/messages") and query == "maxResults=2":
+        return _response({"messages": [{"id": "m1"}, {"id": "m2"}]})
+    if path.endswith("/messages/m1"):
+        return _response(
+            {
+                "id": "m1",
+                "threadId": "t1",
+                "labelIds": ["UNREAD"],
+                "snippet": "hello",
+                "payload": {
+                    "headers": [
+                        {"name": "Subject", "value": "Hello"},
+                        {"name": "From", "value": "boss@example.com"},
+                        {"name": "Date", "value": "Mon, 01 Jan 2026 10:00:00 +0000"},
+                    ],
+                    "body": {
+                        "data": (
+                            base64.urlsafe_b64encode(b"Message body")
+                            .decode("ascii")
+                            .rstrip("=")
+                        ),
+                    },
+                },
+            }
+        )
+    if path.endswith("/messages/m2"):
+        return _response(
+            {
+                "id": "m2",
+                "threadId": "t2",
+                "labelIds": [],
+                "snippet": "world",
+                "payload": {
+                    "headers": [
+                        {"name": "Subject", "value": "World"},
+                        {"name": "From", "value": "team@example.com"},
+                        {"name": "Date", "value": "Mon, 01 Jan 2026 11:00:00 +0000"},
+                    ],
+                    "body": {},
+                },
+            }
+        )
+    if path.endswith("/labels"):
+        return _response({"labels": [{"name": "INBOX"}, {"name": "STARRED"}]})
+    if path.endswith("/messages/send") and request.method == "POST":
+        payload = json.loads(request.content.decode("utf-8"))
+        assert "raw" in payload
+        return _response({"id": "sent-1"})
+    raise AssertionError(f"Unexpected request: {request.method} {request.url}")
+
+
+def _assert_gmail_plugin_contract(plugin: GmailPlugin) -> None:
+    assert plugin.unread_count() == 7
+    messages = plugin.list_messages(max_results=2)
+    assert [message["subject"] for message in messages] == ["Hello", "World"]
+    assert plugin.list_labels() == ["INBOX", "STARRED"]
+
+    result = plugin.send_message(
+        to="user@example.com",
+        subject="Hello",
+        body="Text body",
+    )
+    assert result["id"] == "sent-1"
+
+
 @pytest.fixture
 def gmail_server() -> str:
-    server = ThreadingHTTPServer(("127.0.0.1", 0), GmailHandler)
+    try:
+        server = ThreadingHTTPServer(("127.0.0.1", 0), GmailHandler)
+    except PermissionError:
+        pytest.skip("Local sockets are unavailable in this environment")
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     try:
@@ -106,23 +183,27 @@ def vcr_config() -> dict[str, object]:
     return {
         "filter_headers": ["authorization"],
         "decode_compressed_response": True,
+        "match_on": ["method", "scheme", "host", "path", "query"],
     }
 
 
+def test_gmail_plugin_with_mock_transport() -> None:
+    transport = httpx.MockTransport(_gmail_mock_handler)
+    client = httpx.Client(transport=transport, base_url="https://gmail.googleapis.com")
+    plugin = GmailPlugin(
+        oauth_manager=FakeOAuthManager(),
+        http_client=client,
+        base_url="https://gmail.googleapis.com",
+    )
+    _assert_gmail_plugin_contract(plugin)
+
+
+@pytest.mark.vcr(record_mode="once") if HAS_PYTEST_RECORDING else pytest.mark.skip(
+    reason="pytest-recording is not installed"
+)
 def test_gmail_plugin_with_vcr(gmail_server: str) -> None:
     plugin = GmailPlugin(
         oauth_manager=FakeOAuthManager(),
         base_url=gmail_server,
     )
-
-    assert plugin.unread_count() == 7
-    messages = plugin.list_messages(max_results=2)
-    assert [message["subject"] for message in messages] == ["Hello", "World"]
-    assert plugin.list_labels() == ["INBOX", "STARRED"]
-
-    result = plugin.send_message(
-        to="user@example.com",
-        subject="Hello",
-        body="Text body",
-    )
-    assert result["id"] == "sent-1"
+    _assert_gmail_plugin_contract(plugin)
