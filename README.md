@@ -1,34 +1,68 @@
 # Self OS
 
-Self OS is a personal control panel that runs on GitHub.  
-It aggregates your activity and gradually takes over routine tasks through trusted delegation.
+**Self OS** — личная операционная система, выступающая в роли посредника между пользователем и его цифровыми инструментами.
 
-## Core Idea
+## Цель проекта
 
-Self OS follows one loop:
+Self OS помогает пользователю:
 
-**Observe → Suggest → Trust → Delegate**
+- Агрегировать данные из разных приложений в единый Activity Log
+- Постепенно делегировать рутинные задачи системе через механизм доверия
+- Снижать когнитивную нагрузку
+- Полностью владеть своими данными
 
-Everything happens inside your own GitHub repository. The system collects data, suggests actions through Issues, and after you accept enough suggestions, it can perform actions automatically.
+## Основные принципы
 
-## How It Works
+- **Посредничество** — Self OS не дублирует функционал внешних программ
+- **Плагины** — все интеграции происходят только через плагины
+- **Делегирование по доверию** — автоматизация возможна только при достаточном уровне доверия
+- **Единый интерфейс** — пользователь взаимодействует со всеми программами через Self OS
+- **Activity Log** — единый источник правды
 
-- Your data lives in a GitHub repository (`selfos-data`).
-- GitHub Actions import logs and analyze activity.
-- Suggestions appear as **Issues**.
-- You review and accept or correct them.
-- After reaching a trust threshold, actions can run automatically (commits).
+## Текущий статус
 
-This approach gives you full ownership of your data while allowing progressive automation.
+**Phase 3 полностью завершена** (6/6 этапов)
 
-## Phase 0 Focus
+- Полноценная работа с почтой + делегирование
+- Встроенный планировщик задач и событий
+- Браузерная навигация и быстрый доступ
+- Context Engine с проактивными предложениями
+- Глубокое делегирование (Zero-input delegation)
+- Единый интерфейс (CLI + заготовка Web)
 
-- Activity Log stored in your repository
-- Event categorization as the main delegation example
-- Diagnostics visible in README.md
-- Delegation through GitHub Issues and Pull Requests
-- No separate web application needed
+## Быстрый старт
 
-## Long-term Vision
+```bash
+# Установка
+pip install -e ".[dev]"
 
-Over time Self OS can become your main interface for managing digital life — all while staying inside a system you already use and fully control.
+# Основные команды
+selfos status
+selfos note "Текст заметки"
+selfos task "Название задачи" --priority 1
+selfos email send user@example.com "Тема" "Текст письма" --auto
+selfos schedule list tasks
+selfos context suggest
+selfos delegate status email_send
+```
+
+## Документация
+
+- [User Guide](docs/user-guide.md)
+- [Architecture Overview](docs/architecture-overview.md)
+- [Architecture Contract](docs/architecture-contract.md)
+- [Compliance Report](docs/compliance-report.md)
+
+## Архитектура
+
+Self OS построен на следующих ключевых компонентах:
+
+- `EventFactory` — единая фабрика событий
+- `PluginRegistry` — реестр плагинов
+- `DelegationEngine` — глубокое делегирование
+- `ContextEngine` — анализ паттернов и проактивные предложения
+- `UnifiedInterface` — единая точка входа
+
+## Лицензия
+
+MIT License — см. [LICENSE](LICENSE)
