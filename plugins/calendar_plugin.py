@@ -1,9 +1,4 @@
-"""
-Google Calendar Plugin for Self OS
-
-Fetches events from Google Calendar.
-In real usage requires OAuth2 credentials.
-"""
+from __future__ import annotations
 
 from datetime import datetime, timedelta
 from typing import Any
@@ -23,10 +18,8 @@ class CalendarPlugin(BasePlugin):
     def fetch(self) -> list[dict[str, Any]]:
         """
         Fetch calendar events.
-        Currently returns mock data. Replace with real Google Calendar API call.
+        Legacy compatibility adapter for plugin-registry based flows.
         """
-        # TODO: Implement real Google Calendar API integration
-        # For now we return mock events
         now = datetime.now()
         events = [
             {
@@ -56,4 +49,4 @@ class CalendarPlugin(BasePlugin):
         return events
 
     def validate_config(self) -> bool:
-        return True  # In production would check for credentials
+        return True

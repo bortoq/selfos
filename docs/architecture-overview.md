@@ -1,4 +1,4 @@
-# Self OS Architecture Overview (Phase 5b)
+# Self OS Architecture Overview (Phase 5c)
 
 ## Основные компоненты
 
@@ -18,6 +18,9 @@
 | **SecureTokenStore** | Profile-aware token storage | `src/selfos/integrations/token_store.py` |
 | **RateLimiter** | Persistent rate limiting for integrations | `src/selfos/integrations/rate_limiter.py` |
 | **GmailPlugin** | Gmail REST integration | `src/selfos/plugins/gmail_plugin.py` |
+| **GoogleCalendarPlugin** | Google Calendar REST integration | `src/selfos/plugins/calendar_integration.py` |
+| **TodoistPluginClient** | Todoist REST integration | `src/selfos/plugins/todoist_integration.py` |
+| **GitHubPlugin** | GitHub REST integration | `src/selfos/plugins/github_integration.py` |
 | **SuggestionEngine** | Единый pipeline suggestions (`rules` + `llm`) | `src/selfos/llm/suggestion_engine.py` |
 | **LLM Providers** | Ollama/OpenAI/Anthropic adapters | `src/selfos/llm/providers.py` |
 | **PromptManager** | Built-in and user prompt templates | `src/selfos/llm/prompts.py` |
@@ -38,7 +41,7 @@
 
 ```
 src/selfos/
-├── __init__.py              # v0.6.0 (Phase 5b)
+├── __init__.py              # v0.7.0 (Phase 5c)
 ├── base_selfos_plugin.py    # Базовый класс + on_register()
 ├── browser.py               # Browser service
 ├── cli.py                   # CLI (все команды, делегирование в API)
@@ -70,7 +73,10 @@ src/selfos/
 │   └── templates/
 ├── plugins/
 │   ├── __init__.py
-│   └── gmail_plugin.py
+│   ├── calendar_integration.py
+│   ├── github_integration.py
+│   ├── gmail_plugin.py
+│   └── todoist_integration.py
 ├── scheduler.py             # Планировщик задач
 ├── trust.py                 # Система доверия
 ├── unified_interface.py     # Единый интерфейс
@@ -92,7 +98,11 @@ selfos suggest               # Проактивные предложения (т
 selfos suggest --llm         # LLM-backed suggestions with rules fallback
 selfos config llm            # Конфигурация LLM provider / model
 selfos gmail list/read/send  # Gmail integration
+selfos calendar today        # Google Calendar integration
+selfos todoist list          # Todoist integration
+selfos github notifications  # GitHub integration
 selfos plugin setup gmail    # OAuth setup for Gmail
+selfos plugin setup calendar # OAuth setup for Calendar
 selfos profile create/switch # Профили для интеграций
 selfos email send/suggest    # Email операции
 selfos schedule task/event/list  # Планировщик

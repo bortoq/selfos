@@ -88,3 +88,60 @@ def test_llm_engine_falls_back_on_suspicious_context(tmp_path) -> None:
     response = engine.get_suggestions(mode="llm")
     assert response["backend_used"] == "rules_fallback"
     assert response["fallback_reason"] == "suspicious_context"
+
+
+def test_llm_engine_builds_context_from_integrations(tmp_path) -> None:
+    class IntegrationContextEngine:
+        def get_patterns(self) -> dict[str, object]:
+            return {"workload": "high"}
+
+        def get_proactive_suggestions(self) -> list[str]:
+            return ["Review inbox"]
+
+        def get_context_summary(self) -> str:
+            return "Busy day"
+
+    class FakeGmailPlugin:
+        def list_messages(
+            self,
+            *,
+            max_results: int = 5,
+            unread_only: bool = True,
+        ) -> list[dict[str, object]]:
+            return [{"subject": "Need reply"}]
+
+    class FakeCalendarPlugin:
+        def today(self) -> list[dict[str, object]]:
+            return [{"summary": "Standup"}]
+
+    class FakeTodoistPlugin:
+        def list_tasks(self) -> list[dict[str, object]]:
+            return [{"content": "Ship Phase 5c"}]
+
+    class FakeGitHubPlugin:
+        def notifications(self) -> list[dict[str, object]]:
+            return [{"title": "Review PR"}]
+
+        def pull_requests(
+            self,
+            repo: str | None = None,
+            state: str = "open",
+        ) -> list[dict[str, object]]:
+            return [{"title": "Phase 5c PR"}]
+
+    engine = SuggestionEngine(
+        state_dir=tmp_path,
+        provider_factory=lambda name: GoodProvider(),
+        context_engine=IntegrationContextEngine(),
+        gmail_provider=lambda: FakeGmailPlugin(),
+        calendar_provider=lambda: FakeCalendarPlugin(),
+        todoist_provider=lambda: FakeTodoistPlugin(),
+        github_provider=lambda: FakeGitHubPlugin(),
+    )
+
+    context = engine._build_context()
+    assert context["unread_emails"] == [{"subject": "Need reply"}]
+    assert context["upcoming_events"] == [{"summary": "Standup"}]
+    assert context["active_tasks"] == [{"content": "Ship Phase 5c"}]
+    assert context["github_notifications"] == [{"title": "Review PR"}]
+    assert context["github_pull_requests"] == [{"title": "Phase 5c PR"}]

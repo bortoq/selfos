@@ -7,9 +7,14 @@ from selfos.hooks import (
     ALL_HOOK_POINTS,
     HOOK_AFTER,
     HOOK_BEFORE,
+    HOOK_CALENDAR_EVENT_CREATED,
+    HOOK_CALENDAR_EVENT_UPDATED,
     HOOK_EMAIL_SEND,
+    HOOK_GITHUB_ISSUE,
+    HOOK_GITHUB_NOTIFICATION,
     HOOK_INSTEAD,
     HOOK_NOTE_CREATE,
+    HOOK_TASK_COMPLETED,
     HOOK_TASK_CREATE,
     HookRegistry,
     get_hook_registry,
@@ -176,6 +181,11 @@ class TestHookPointConstants:
         assert len(ALL_HOOK_POINTS) >= 10  # At least 10 hook points
         assert HOOK_NOTE_CREATE in ALL_HOOK_POINTS
         assert HOOK_EMAIL_SEND in ALL_HOOK_POINTS
+        assert HOOK_CALENDAR_EVENT_CREATED in ALL_HOOK_POINTS
+        assert HOOK_CALENDAR_EVENT_UPDATED in ALL_HOOK_POINTS
+        assert HOOK_TASK_COMPLETED in ALL_HOOK_POINTS
+        assert HOOK_GITHUB_NOTIFICATION in ALL_HOOK_POINTS
+        assert HOOK_GITHUB_ISSUE in ALL_HOOK_POINTS
 
 
 class TestPluginOnRegister:

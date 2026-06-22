@@ -21,14 +21,17 @@ Self OS помогает пользователю:
 
 ## Текущий статус
 
-**Phase 5b завершена**: поверх завершённой Phase 4 добавлены OAuth/Gmail integration и unified LLM suggestion pipeline.
+**Phase 5c завершена**: поверх завершённых Phase 5a/5b добавлены Calendar, Todoist и GitHub integrations, а `SuggestionEngine` теперь собирает multi-source context.
 
 - Полноценная работа с почтой + делегирование
 - Gmail OAuth + Gmail CLI integration
+- Google Calendar CLI integration
+- Todoist CLI integration
+- GitHub notifications/issues/PR CLI integration
 - Встроенный планировщик задач и событий
 - Браузерная навигация и быстрый доступ
 - Context Engine с проактивными предложениями
-- Unified `SuggestionEngine` (`rules` + `llm`)
+- Unified `SuggestionEngine` (`rules` + `llm`) с email/calendar/tasks/github context
 - Ollama по умолчанию, OpenAI/Anthropic через explicit cloud opt-in
 - Глубокое делегирование (Zero-input delegation)
 - Единый интерфейс (CLI + заготовка Web)
@@ -48,6 +51,9 @@ selfos schedule list tasks
 selfos context suggest
 selfos suggest --llm
 selfos gmail unread_count
+selfos calendar today
+selfos todoist list
+selfos github notifications
 selfos delegate status email_send
 ```
 
@@ -68,7 +74,7 @@ Self OS построен на следующих ключевых компоне
 - `ContextEngine` — анализ паттернов и проактивные предложения
 - `UnifiedInterface` — единая точка входа
 - `OAuthManager` / `SecureTokenStore` — foundation для внешних интеграций
-- `SuggestionEngine` — единый pipeline suggestions
+- `SuggestionEngine` — единый pipeline suggestions с multi-source context
 
 ## Лицензия
 

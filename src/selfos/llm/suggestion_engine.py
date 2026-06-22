@@ -22,6 +22,7 @@ from selfos.llm.security import PIIRedactor, PromptSanitizer
 from selfos.llm.state import SuggestionStateStore
 
 ProviderFactory = Callable[[str], BaseLLMProvider]
+IntegrationFactory = Callable[[], Any]
 
 
 class SuggestionEngine:
@@ -31,6 +32,10 @@ class SuggestionEngine:
         state_dir: Path | None = None,
         provider_factory: ProviderFactory | None = None,
         context_engine: ContextEngine | None = None,
+        gmail_provider: IntegrationFactory | None = None,
+        calendar_provider: IntegrationFactory | None = None,
+        todoist_provider: IntegrationFactory | None = None,
+        github_provider: IntegrationFactory | None = None,
     ) -> None:
         self._store = SuggestionStateStore(base_dir=state_dir)
         self._context_engine = context_engine or ContextEngine()
@@ -39,6 +44,10 @@ class SuggestionEngine:
         self._redactor = PIIRedactor()
         self._cost_guard = CostGuard(path=self._store.stats_file)
         self._provider_factory = provider_factory or self._build_provider
+        self._gmail_provider = gmail_provider or self._build_gmail_provider
+        self._calendar_provider = calendar_provider or self._build_calendar_provider
+        self._todoist_provider = todoist_provider or self._build_todoist_provider
+        self._github_provider = github_provider or self._build_github_provider
 
     def get_suggestions(
         self,
@@ -188,9 +197,26 @@ class SuggestionEngine:
             "summary": self._context_engine.get_context_summary(),
             "patterns": patterns,
             "rules_suggestions": suggestions,
-            "unread_emails": [],
-            "active_tasks": [],
-            "upcoming_events": [],
+            "unread_emails": self._safe_fetch(
+                self._gmail_provider,
+                lambda plugin: plugin.list_messages(max_results=5, unread_only=True),
+            ),
+            "active_tasks": self._safe_fetch(
+                self._todoist_provider,
+                lambda plugin: plugin.list_tasks(),
+            ),
+            "upcoming_events": self._safe_fetch(
+                self._calendar_provider,
+                lambda plugin: plugin.today(),
+            ),
+            "github_notifications": self._safe_fetch(
+                self._github_provider,
+                lambda plugin: plugin.notifications(),
+            ),
+            "github_pull_requests": self._safe_fetch(
+                self._github_provider,
+                lambda plugin: plugin.pull_requests("bortoq/selfos"),
+            ),
         }
 
     def _parse_llm_suggestions(
@@ -255,3 +281,34 @@ class SuggestionEngine:
                 api_key=str(config.get("api_key", "")),
             )
         return OllamaProvider(model=model or "llama3.2")
+
+    def _safe_fetch(
+        self,
+        provider_factory: IntegrationFactory,
+        loader: Callable[[Any], list[dict[str, Any]]],
+    ) -> list[dict[str, Any]]:
+        try:
+            plugin = provider_factory()
+            return loader(plugin)
+        except Exception:
+            return []
+
+    def _build_gmail_provider(self) -> Any:
+        from selfos.cli import _create_gmail_plugin
+
+        return _create_gmail_plugin()
+
+    def _build_calendar_provider(self) -> Any:
+        from selfos.cli import _create_calendar_plugin
+
+        return _create_calendar_plugin()
+
+    def _build_todoist_provider(self) -> Any:
+        from selfos.cli import _create_todoist_plugin
+
+        return _create_todoist_plugin()
+
+    def _build_github_provider(self) -> Any:
+        from selfos.cli import _create_github_plugin
+
+        return _create_github_plugin()

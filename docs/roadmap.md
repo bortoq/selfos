@@ -1,7 +1,7 @@
 # Self OS Roadmap
 
 **Последнее обновление:** 2026-06-22 (v3 — повторный аудит, 7.9 → 8.5/10)  
-**Текущая версия:** 0.6.0 (Phase 5b: LLM-powered Suggestions — завершена)  
+**Текущая версия:** 0.7.0 (Phase 5c: Calendar + Todoist + GitHub — завершена)  
 **Оценка v2:** 7.9/10 → целевая **8.5/10**
 
 ---
@@ -46,7 +46,7 @@
     ├── Phase 5b: LLM-powered Suggestions            [25 дней, v0.6.0] ✅
     │   └── Unified suggestion pipeline + Ollama default runtime
     │
-    ├── Phase 5c: Calendar + Todoist + GitHub         [25 дней, v0.7.0]
+    ├── Phase 5c: Calendar + Todoist + GitHub         [25 дней, v0.7.0] ✅
     │   └── LLM подсказывает по всем источникам
     │
     ├── Phase 6: Production Hardening                 [20 дней, v0.8.0]
@@ -551,7 +551,7 @@ selfos config llm               # Настройка провайдера
 
 ## Phase 5c — Calendar + Todoist + GitHub
 
-**Статус:** Планирование (после Phase 5b)  
+**Статус:** Завершено (v0.7.0)  
 **Цель:** Остальные интеграции. LLM suggestions теперь работают со всеми источниками.  
 **Время:** 25 дней (17 naive × ~1.5 buffer)  
 **Версия:** 0.7.0

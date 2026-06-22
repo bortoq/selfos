@@ -1,8 +1,4 @@
-"""
-Todoist Plugin for Self OS
-
-Fetches tasks from Todoist.
-"""
+from __future__ import annotations
 
 from typing import Any
 
@@ -20,9 +16,8 @@ class TodoistPlugin(BasePlugin):
     def fetch(self) -> list[dict[str, Any]]:
         """
         Fetch tasks from Todoist.
-        Currently returns mock data.
+        Legacy compatibility adapter for plugin-registry based flows.
         """
-        # TODO: Replace with real Todoist REST API
         tasks = [
             {
                 "id": "todoist-task-demo-1",
@@ -52,7 +47,7 @@ class TodoistPlugin(BasePlugin):
 
     def push(self, event: dict[str, Any]) -> bool:
         """
-        Create a new task in Todoist (stub).
+        Create a new task in Todoist (legacy compatibility stub).
         """
         print(f"[Todoist] Would create task: {event.get('title')}")
         return True

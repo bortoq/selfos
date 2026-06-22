@@ -41,6 +41,11 @@ HOOK_EMAIL_SEND = "email:send"
 HOOK_SUGGEST = "suggest:get"
 HOOK_SCHEDULE_TASK = "schedule:task"
 HOOK_SCHEDULE_EVENT = "schedule:event"
+HOOK_CALENDAR_EVENT_CREATED = "calendar:event_created"
+HOOK_CALENDAR_EVENT_UPDATED = "calendar:event_updated"
+HOOK_TASK_COMPLETED = "task:completed"
+HOOK_GITHUB_NOTIFICATION = "github:notification"
+HOOK_GITHUB_ISSUE = "github:issue"
 HOOK_BROWSER_OPEN = "browser:open"
 HOOK_BROWSER_SEARCH = "browser:search"
 HOOK_CONTEXT_SUMMARY = "context:summary"
@@ -55,6 +60,11 @@ ALL_HOOK_POINTS: frozenset[str] = frozenset({
     HOOK_SUGGEST,
     HOOK_SCHEDULE_TASK,
     HOOK_SCHEDULE_EVENT,
+    HOOK_CALENDAR_EVENT_CREATED,
+    HOOK_CALENDAR_EVENT_UPDATED,
+    HOOK_TASK_COMPLETED,
+    HOOK_GITHUB_NOTIFICATION,
+    HOOK_GITHUB_ISSUE,
     HOOK_BROWSER_OPEN,
     HOOK_BROWSER_SEARCH,
     HOOK_CONTEXT_SUMMARY,

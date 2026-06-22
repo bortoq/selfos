@@ -1,4 +1,4 @@
-# Current State — Phase 5b Complete
+# Current State — Phase 5c Complete
 
 **Дата:** 2026-06-22
 
@@ -6,7 +6,7 @@
 
 | Компонент | Статус |
 |-----------|--------|
-| CLI (`selfos status / note / task / gmail / suggest --llm / ...`) | ✅ Работает |
+| CLI (`selfos status / note / task / gmail / calendar / todoist / github / suggest --llm / ...`) | ✅ Работает |
 | EventFactory (UUID v4, tz-aware) | ✅ Работает |
 | PluginRegistry + все плагины | ✅ Работает |
 | Trust Manager (доверие + auto-режим) | ✅ Работает |
@@ -19,15 +19,19 @@
 | Plugin Platform (Manifest + SDK + CLI) | ✅ Работает (Phase 4, Stage 1) |
 | OAuth2 + Token Store + Rate Limiter | ✅ Работает (Phase 5a) |
 | Gmail Integration | ✅ Работает (Phase 5a) |
+| Calendar Integration | ✅ Работает (Phase 5c) |
+| Todoist Integration | ✅ Работает (Phase 5c) |
+| GitHub Integration | ✅ Работает (Phase 5c) |
 | Unified SuggestionEngine (`rules` + `llm`) | ✅ Работает (Phase 5b) |
 | LLM Providers + Prompt System | ✅ Работает (Phase 5b) |
+| Multi-source Suggestion Context | ✅ Работает (Phase 5c) |
 | Web Interface | ⏸ Заглушка |
 
 ## Метрики качества
 
 | Метрика | Значение |
 |---------|---------|
-| Тесты | 237 passed |
+| Тесты | 248 passed, 1 skipped |
 | Ruff | 0 errors |
 | Mypy (src/selfos/) | 0 errors (38 files) |
 | Покрытие | ~66% |
@@ -83,3 +87,9 @@
   - Prompt templates, cost guard, stats, ratings, cache
   - Prompt sanitizer + PII redaction
   - `selfos config llm`
+- Phase 5c:
+  - Google Calendar integration + CLI
+  - Todoist integration + CLI
+  - GitHub integration + CLI
+  - Hook expansion for calendar/task/github flows
+  - `SuggestionEngine` context expansion across Gmail, Calendar, Todoist, and GitHub

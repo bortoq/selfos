@@ -4,6 +4,22 @@ All notable changes to Self OS are documented here.
 
 ---
 
+## [0.7.0] — 2026-06-22 — Phase 5c: Calendar + Todoist + GitHub
+
+### Features
+- Google Calendar integration with `list`, `today`, `create`, `update`, `delete`, and `freebusy`
+- Todoist integration with `list`, `create`, `complete`, `projects`, and `labels`
+- GitHub integration with `notifications`, `issues`, `prs`, and `search`
+- New CLI commands: `selfos calendar ...`, `selfos todoist ...`, `selfos github ...`
+- `SuggestionEngine` context expansion across email, calendar, tasks, and GitHub sources
+
+### Platform
+- New hook points for calendar, task completion, and GitHub review flows
+- Deterministic HTTP-backed tests for all new integrations
+- Legacy root-level calendar/todoist plugins preserved as compatibility adapters
+
+---
+
 ## [0.6.0] — 2026-06-22 — Phase 5b: LLM-powered Suggestions
 
 ### Features

@@ -234,6 +234,30 @@ def _create_gmail_plugin(profile: str | None = None) -> Any:
     return GmailPlugin(_create_oauth_manager("gmail", profile=profile))
 
 
+def _create_calendar_plugin(profile: str | None = None) -> Any:
+    from selfos.plugins.calendar_integration import GoogleCalendarPlugin
+
+    return GoogleCalendarPlugin(_create_oauth_manager("calendar", profile=profile))
+
+
+def _create_todoist_plugin() -> Any:
+    from selfos.plugins.todoist_integration import TodoistPluginClient
+
+    api_token = os.getenv("TODOIST_API_TOKEN", "")
+    if not api_token:
+        raise ValueError("Missing Todoist API token. Set TODOIST_API_TOKEN.")
+    return TodoistPluginClient(api_token=api_token)
+
+
+def _create_github_plugin() -> Any:
+    from selfos.plugins.github_integration import GitHubPlugin
+
+    api_token = os.getenv("GITHUB_TOKEN", "") or os.getenv("GITHUB_API_TOKEN", "")
+    if not api_token:
+        raise ValueError("Missing GitHub API token. Set GITHUB_TOKEN.")
+    return GitHubPlugin(api_token=api_token)
+
+
 def _create_suggestion_engine() -> SuggestionEngine:
     return SuggestionEngine()
 
@@ -349,6 +373,105 @@ def cmd_gmail(args: Any) -> None:
     elif args.subcommand == "labels":
         for label in plugin.list_labels():
             print(label)
+
+
+def cmd_calendar(args: Any) -> None:
+    hooks = get_hook_registry()
+    plugin = _create_calendar_plugin()
+
+    if args.subcommand == "today":
+        for event in plugin.today():
+            print(f"{event['summary']} | {event['start']} -> {event['end']}")
+    elif args.subcommand == "list":
+        for event in plugin.list_events(
+            time_min=args.time_min,
+            time_max=args.time_max,
+            max_results=args.max_results,
+        ):
+            print(f"{event['summary']} | {event['start']} -> {event['end']}")
+    elif args.subcommand == "create":
+        ctx = hooks.trigger_before(
+            "calendar:event_created",
+            summary=args.summary,
+            start=args.start,
+            end=args.end,
+            location=args.location,
+        )
+        result = plugin.create_event(
+            summary=ctx.get("summary", args.summary),
+            start=ctx.get("start", args.start),
+            end=ctx.get("end", args.end),
+            location=ctx.get("location", args.location),
+        )
+        result = hooks.trigger_after("calendar:event_created", result=result, **ctx)
+        print(f"Created calendar event: {result.get('id')} | {result.get('summary', '')}")
+    elif args.subcommand == "update":
+        ctx = hooks.trigger_before("calendar:event_updated", event_id=args.event_id)
+        result = plugin.update_event(args.event_id, summary=args.summary)
+        result = hooks.trigger_after("calendar:event_updated", result=result, **ctx)
+        print(f"Updated calendar event: {result.get('id')} | {result.get('summary', '')}")
+    elif args.subcommand == "delete":
+        deleted = plugin.delete_event(args.event_id)
+        print(f"Deleted calendar event: {args.event_id}" if deleted else "Delete failed")
+    elif args.subcommand == "freebusy":
+        result = plugin.freebusy(args.time_min, args.time_max)
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+
+
+def cmd_todoist(args: Any) -> None:
+    hooks = get_hook_registry()
+    plugin = _create_todoist_plugin()
+
+    if args.subcommand == "list":
+        for task in plugin.list_tasks(project_id=args.project_id, label=args.label):
+            print(f"{task['id']} | {task['content']}")
+    elif args.subcommand == "create":
+        ctx = hooks.trigger_before(
+            "task:created",
+            content=args.content,
+            due=args.due,
+            priority=args.priority,
+        )
+        result = plugin.create_task(
+            content=ctx.get("content", args.content),
+            due=ctx.get("due", args.due),
+            priority=ctx.get("priority", args.priority),
+        )
+        result = hooks.trigger_after("task:created", result=result, **ctx)
+        print(f"Created Todoist task: {result.get('id')} | {result.get('content', '')}")
+    elif args.subcommand == "complete":
+        ctx = hooks.trigger_before("task:completed", task_id=args.task_id)
+        completed = plugin.complete_task(args.task_id)
+        hooks.trigger_after("task:completed", result={"completed": completed}, **ctx)
+        print(f"Completed Todoist task: {args.task_id}")
+    elif args.subcommand == "projects":
+        for project in plugin.list_projects():
+            print(f"{project['id']} | {project['name']}")
+    elif args.subcommand == "labels":
+        for label in plugin.list_labels():
+            print(label["name"])
+
+
+def cmd_github(args: Any) -> None:
+    hooks = get_hook_registry()
+    plugin = _create_github_plugin()
+
+    if args.subcommand == "notifications":
+        notifications = plugin.notifications()
+        for item in notifications:
+            hooks.trigger_after("github:notification", result=item, **item)
+            print(f"{item['repository']} | {item['title']}")
+    elif args.subcommand == "issues":
+        issues = plugin.issues(args.repo, state=args.state)
+        for item in issues:
+            hooks.trigger_after("github:issue", result=item, **item)
+            print(f"{item['state']} | {item['title']}")
+    elif args.subcommand == "prs":
+        for item in plugin.pull_requests(args.repo, state=args.state):
+            print(f"{item['state']} | {item['title']}")
+    elif args.subcommand == "search":
+        for item in plugin.search(args.query):
+            print(f"{item['state']} | {item['title']}")
 
 
 
@@ -564,8 +687,8 @@ def cmd_plugin(args: Any) -> None:
         print("Use 'selfos plugin install <name>' to install a plugin.")
 
     elif args.action == "setup":
-        if args.name != "gmail":
-            raise ValueError("Only 'gmail' setup is supported in Phase 5a")
+        if args.name not in {"gmail", "calendar"}:
+            raise ValueError("Only 'gmail' and 'calendar' setup are supported")
         manager = _create_oauth_manager(args.name)
         if args.test:
             ok = manager.test_connection()
@@ -709,6 +832,71 @@ def build_parser() -> argparse.ArgumentParser:
     gmail_unread.set_defaults(func=cmd_gmail)
     gmail_labels = gmail_sub.add_parser("labels", help="List labels")
     gmail_labels.set_defaults(func=cmd_gmail)
+
+    # calendar
+    calendar = subparsers.add_parser("calendar", help="Google Calendar integration")
+    calendar_sub = calendar.add_subparsers(dest="subcommand", required=True)
+    calendar_today = calendar_sub.add_parser("today", help="List today's events")
+    calendar_today.set_defaults(func=cmd_calendar)
+    calendar_list = calendar_sub.add_parser("list", help="List events")
+    calendar_list.add_argument("--time-min")
+    calendar_list.add_argument("--time-max")
+    calendar_list.add_argument("--max-results", dest="max_results", type=int, default=10)
+    calendar_list.set_defaults(func=cmd_calendar)
+    calendar_create = calendar_sub.add_parser("create", help="Create event")
+    calendar_create.add_argument("--summary", required=True)
+    calendar_create.add_argument("--start", required=True)
+    calendar_create.add_argument("--end", required=True)
+    calendar_create.add_argument("--location")
+    calendar_create.set_defaults(func=cmd_calendar)
+    calendar_update = calendar_sub.add_parser("update", help="Update event")
+    calendar_update.add_argument("event_id")
+    calendar_update.add_argument("--summary", required=True)
+    calendar_update.set_defaults(func=cmd_calendar)
+    calendar_delete = calendar_sub.add_parser("delete", help="Delete event")
+    calendar_delete.add_argument("event_id")
+    calendar_delete.set_defaults(func=cmd_calendar)
+    calendar_freebusy = calendar_sub.add_parser("freebusy", help="Check free/busy")
+    calendar_freebusy.add_argument("time_min")
+    calendar_freebusy.add_argument("time_max")
+    calendar_freebusy.set_defaults(func=cmd_calendar)
+
+    # todoist
+    todoist = subparsers.add_parser("todoist", help="Todoist integration")
+    todoist_sub = todoist.add_subparsers(dest="subcommand", required=True)
+    todoist_list = todoist_sub.add_parser("list", help="List tasks")
+    todoist_list.add_argument("--project-id")
+    todoist_list.add_argument("--label")
+    todoist_list.set_defaults(func=cmd_todoist)
+    todoist_create = todoist_sub.add_parser("create", help="Create task")
+    todoist_create.add_argument("--content", required=True)
+    todoist_create.add_argument("--due")
+    todoist_create.add_argument("--priority", type=int, default=1)
+    todoist_create.set_defaults(func=cmd_todoist)
+    todoist_complete = todoist_sub.add_parser("complete", help="Complete task")
+    todoist_complete.add_argument("task_id")
+    todoist_complete.set_defaults(func=cmd_todoist)
+    todoist_projects = todoist_sub.add_parser("projects", help="List projects")
+    todoist_projects.set_defaults(func=cmd_todoist)
+    todoist_labels = todoist_sub.add_parser("labels", help="List labels")
+    todoist_labels.set_defaults(func=cmd_todoist)
+
+    # github
+    github = subparsers.add_parser("github", help="GitHub integration")
+    github_sub = github.add_subparsers(dest="subcommand", required=True)
+    github_notifications = github_sub.add_parser("notifications", help="List notifications")
+    github_notifications.set_defaults(func=cmd_github)
+    github_issues = github_sub.add_parser("issues", help="List issues")
+    github_issues.add_argument("repo")
+    github_issues.add_argument("--state", default="open")
+    github_issues.set_defaults(func=cmd_github)
+    github_prs = github_sub.add_parser("prs", help="List pull requests")
+    github_prs.add_argument("repo")
+    github_prs.add_argument("--state", default="open")
+    github_prs.set_defaults(func=cmd_github)
+    github_search = github_sub.add_parser("search", help="Search issues and pull requests")
+    github_search.add_argument("query")
+    github_search.set_defaults(func=cmd_github)
 
     # delegate
     delegate = subparsers.add_parser("delegate", help="Manage delegation")
