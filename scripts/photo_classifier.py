@@ -15,11 +15,13 @@ Later can be replaced with real computer vision.
 
 import json
 from datetime import datetime
-from pathlib import Path
 from typing import Any
 
-MEDIA_DIR = Path("media")
-DATA_DIR = Path("data/activity")
+from selfos.config import data_dir as get_data_dir
+from selfos.config import media_dir as get_media_dir
+
+MEDIA_DIR = get_media_dir()
+DATA_DIR = get_data_dir()
 
 
 def classify_photo(filename: str) -> str:

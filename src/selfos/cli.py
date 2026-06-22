@@ -83,10 +83,16 @@ def cmd_schedule(args: Any) -> None:
         print(f"Event added: {event['title']}")
     elif args.subcommand == "list":
         if args.type == "tasks":
-            for t in scheduler.list_tasks():
+            tasks = scheduler.list_tasks()
+            if not tasks:
+                print("(no tasks)")
+            for t in tasks:
                 print(f"- {t['title']}")
         else:
-            for e in scheduler.list_upcoming_events():
+            events = scheduler.list_upcoming_events()
+            if not events:
+                print("(no upcoming events)")
+            for e in events:
                 print(f"- {e['title']} @ {e['timestamp']}")
 
 

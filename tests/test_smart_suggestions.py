@@ -1,14 +1,19 @@
-from scripts.smart_suggestions import generate_smart_suggestions
+from selfos.plugin_registry import PluginRegistry
 
 
 def test_smart_suggestions_returns_list():
-    suggestions = generate_smart_suggestions()
-    assert isinstance(suggestions, list)
-    assert len(suggestions) > 0
+    plugin = PluginRegistry.get_plugin("smart_suggestions")
+    result = plugin.execute(recent_events=[])
+    assert isinstance(result["suggestions"], list)
+    assert len(result["suggestions"]) > 0
 
 
 def test_smart_suggestions_content():
-    suggestions = generate_smart_suggestions()
-    # Проверяем, что хотя бы одно предложение содержит ключевые слова
-    text = " ".join(suggestions).lower()
-    assert any(word in text for word in ["focus", "meeting", "work", "calm", "reflection"])
+    plugin = PluginRegistry.get_plugin("smart_suggestions")
+    events = [
+        {"type": "event", "title": "Team sync meeting"},
+        {"type": "task", "title": "Finish Phase 2 plugins"},
+    ]
+    result = plugin.execute(recent_events=events)
+    text = " ".join(result["suggestions"]).lower()
+    assert any(word in text for word in ["focus", "meeting", "work", "deep"])

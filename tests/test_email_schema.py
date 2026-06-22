@@ -21,19 +21,19 @@ def test_create_email_event_has_delegation_status():
     assert event.get("metadata", {}).get("body_preview") == "Hello"
 
 
-def test_save_to_activity_log_preserves_delegation_status():
+def test_save_to_activity_log_preserves_delegation_status(monkeypatch, tmp_path):
     """EmailService._save_to_activity_log создаёт событие с delegation_status."""
+    monkeypatch.setenv("SELFOS_HOME", str(tmp_path))
     service = EmailService()
 
     # Используем _save_to_activity_log напрямую
-    # Сохраняется в activity.json — проверяем что метод не падает
     service._save_to_activity_log(
         to="user@test.com",
         subject="Test email",
         body="Test body content here",
         status="review"
     )
-    # Если не упало — значит событие создано и сохранено
+    # Если не упало — значит событие создано и сохранено в tmp_path
 
 
 def test_email_event_schema_matches_contract():
@@ -70,8 +70,9 @@ def test_email_event_schema_matches_contract():
     )
 
 
-def test_email_service_send_returns_proper_schema():
+def test_email_service_send_returns_proper_schema(monkeypatch, tmp_path):
     """EmailService.send_email возвращает dict с ожидаемой структурой."""
+    monkeypatch.setenv("SELFOS_HOME", str(tmp_path))
     service = EmailService()
     result = service.send_email(
         to="user@example.com",

@@ -32,3 +32,8 @@ def config_file() -> Path:
     if local.exists():
         return local
     return _get_home() / "selfos.yaml"
+
+
+def media_dir() -> Path:
+    """Директория для медиа-файлов."""
+    return _get_home() / "media"
