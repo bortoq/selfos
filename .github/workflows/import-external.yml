@@ -24,26 +24,28 @@ jobs:
       - name: Run Calendar Plugin
         env:
           CALENDAR_ID: ${{ secrets.CALENDAR_ID }}
-        run: python -c "
-from plugins.calendar_plugin import CalendarPlugin
-plugin = CalendarPlugin({'calendar_id': '${{ secrets.CALENDAR_ID || \"primary\" }}'})
-events = plugin.fetch()
-print(f'Calendar events fetched: {len(events)}')
-for e in events:
-    print(e)
-"
+        run: |
+          python -c "
+          from plugins.calendar_plugin import CalendarPlugin
+          plugin = CalendarPlugin({'calendar_id': '${{ secrets.CALENDAR_ID || "primary" }}'})
+          events = plugin.fetch()
+          print(f'Calendar events fetched: {len(events)}')
+          for e in events:
+              print(e)
+          "
 
       - name: Run Todoist Plugin
         env:
           TODOIST_TOKEN: ${{ secrets.TODOIST_TOKEN }}
-        run: python -c "
-from plugins.todoist_plugin import TodoistPlugin
-plugin = TodoistPlugin()
-tasks = plugin.fetch()
-print(f'Todoist tasks fetched: {len(tasks)}')
-for t in tasks:
-    print(t)
-"
+        run: |
+          python -c "
+          from plugins.todoist_plugin import TodoistPlugin
+          plugin = TodoistPlugin()
+          tasks = plugin.fetch()
+          print(f'Todoist tasks fetched: {len(tasks)}')
+          for t in tasks:
+              print(t)
+          "
 
       - name: Commit new data (placeholder)
         run: |
